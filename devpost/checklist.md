@@ -51,23 +51,23 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 1 (kernel proven)
-- [ ] Final kick-the-tires exploration and feedback completed
+- [x] Early usable behavior explored — after slice 1 (kernel proven)
+- [x] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — focused alternative (verified schedule logic in isolation; investigated async-storage native-build requirement)
+- [x] Optional edit and transfer reflection addressed — declined (user: "just build, I'll review later")
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: Four build slices complete and committed (setup+calendar, day list+check-off, add batch/custom task, empty day+polish). Schedule logic verified via isolated mechanical test (deworm spans days 4–6, cleaning every 7 days, vaccine at day 14). Typecheck clean for all new files. App-map.html generated.
+Route and stops: Reference route only (not toured interactively): flock-calendar/src/app/index.tsx → flock-calendar/src/app/day/[date].tsx → flock-calendar/src/storage/store.ts
+Edit outcome: declined/not applicable
+Reflection: offered/declined — personal answer belongs only in the ignored profile
+Activity mode: live app and editor (typecheck, mechanical verification)
 
 ## Revisions

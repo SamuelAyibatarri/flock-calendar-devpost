@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flock Calendar — App Map</title>
+<style>
+  :root{
+    --bg:#f6f1e7; --card:#fffdf8; --ink:#35322b; --muted:#6c675d; --line:#e2d7c3;
+    --accent:#b8893a; --accent-soft:#f3e7cf; --green:#3f7d5a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  main{max-width:820px;margin:0 auto;padding:48px 20px 72px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:34px;line-height:1.15;margin:0 0 8px}
+  .lede{color:var(--muted);font-size:17px;max-width:620px;margin:0 0 26px}
+  section{margin-top:40px}
+  h2{font-family:Georgia,"Times New Roman",serif;font-size:21px;margin:0 0 10px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+  p{margin:0 0 10px}
+  code{background:#f2f6f1;padding:1px 6px;border-radius:6px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#2f5a41}
+  pre{background:#fbf8f2;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.5;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-x:auto;margin:10px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:12px 0}
+  .diagram{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 18px 12px;overflow-x:auto}
+  .diagram svg{display:block;width:100%;min-width:700px;height:auto}
+  .caption{font-size:13px;color:var(--muted);text-align:center;margin:6px 0 10px}
+  .stop{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+  .stop .num{display:inline-block;width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;font-weight:700;text-align:center;font-size:14px;margin-right:10px}
+  .pointer{background:#fdf6e8;border:1px dashed #d9b86a;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:14.5px}
+  .pointer b{color:#7a5a1e}
+  .reuse{background:linear-gradient(135deg,#fbf3df,#f6ead0);border:1px solid #e6d3a8;border-left:4px solid var(--accent);border-radius:10px;padding:16px 20px;margin:14px 0}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden}
+  summary{cursor:pointer;list-style:none;padding:13px 18px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+  summary::-webkit-details-marker{display:none}
+  details .body{padding:0 18px 16px 46px;color:var(--muted)}
+  footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Flock Calendar — App Map</h1>
+  <p class="lede">A care schedule for layer farms. Monday sets up his flock once, and the app generates a calendar of what each batch needs and when — feed, water, checkup, eggs, cage cleaning, vaccines, deworming — so he never holds the routine in his head.</p>
+
+  <section>
+    <h2>What the app is, in pieces</h2>
+    <div class="card">
+      <p><strong>Purpose:</strong> hold a layer farm's recurring care routine on the phone, with a generated calendar and daily check-off.</p>
+      <p><strong>Main pieces:</strong></p>
+      <ul>
+        <li><code>src/app/setup.tsx</code> — first-run questionnaire; generates the calendar from answers.</li>
+        <li><code>src/app/index.tsx</code> — calendar screen (month grid); tap a date to see its tasks.</li>
+        <li><code>src/app/day/[date].tsx</code> — day list (selected day + next 7 days) with check-off.</li>
+        <li><code>src/components/TaskRow.tsx</code> — a single task row with checkbox.</li>
+        <li><code>src/components/BatchAdder.tsx</code>, <code>CustomTaskAdder.tsx</code> — add another batch or a one-off task.</li>
+        <li><code>src/schedule/poultry.ts</code> — the standard age-based layer-care rules.</li>
+        <li><code>src/schedule/build.ts</code> — turns setup answers + standard rules into per-batch care rules.</li>
+        <li><code>src/schedule/rules.ts</code> — "is this rule due on this date?" logic.</li>
+        <li><code>src/storage/store.ts</code> — AsyncStorage: batches, rules, completions saved as one JSON file (<code>flock:v1</code>) on the phone.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>One real action, traced through the code</h2>
+    <p class="caption">Action: Monday checks off "Deworming day 1" for Batch A on June 4.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 860 210" role="img" aria-label="Tap date in calendar opens day list, checking a task writes a completion to AsyncStorage, calendar re-reads storage on reopen.">
+        <defs>
+          <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#8a6d3b"></path>
+          </marker>
+        </defs>
+        <g font-family="system-ui,sans-serif">
+          <rect x="20" y="40" width="170" height="130" rx="10" fill="#fdf6e8" stroke="#c9a24b" stroke-width="2"></rect>
+          <text x="105" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="#35322b">Calendar</text>
+          <text x="105" y="100" text-anchor="middle" font-size="13" fill="#6c675d">src/app/index.tsx</text>
+          <text x="105" y="124" text-anchor="middle" font-size="12" fill="#6c675d">tap June 4</text>
+          <text x="105" y="152" text-anchor="middle" font-size="12" fill="#6c675d">(day list opens)</text>
+          <line x1="190" y1="105" x2="230" y2="105" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arr)"></line>
+
+          <rect x="230" y="40" width="170" height="130" rx="10" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+          <text x="315" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="#35322b">Day list</text>
+          <text x="315" y="100" text-anchor="middle" font-size="13" fill="#6c675d">src/app/day/[date].tsx</text>
+          <text x="315" y="124" text-anchor="middle" font-size="12" fill="#6c675d">check off deworm</text>
+          <text x="315" y="152" text-anchor="middle" font-size="12" fill="#6c675d">(handleCheck)</text>
+          <line x1="400" y1="105" x2="440" y2="105" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arr)"></line>
+
+          <rect x="440" y="40" width="170" height="130" rx="10" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+          <text x="525" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="#35322b">Storage</text>
+          <text x="525" y="100" text-anchor="middle" font-size="13" fill="#6c675d">src/storage/store.ts</text>
+          <text x="525" y="124" text-anchor="middle" font-size="12" fill="#6c675d">saveFlock writes</text>
+          <text x="525" y="152" text-anchor="middle" font-size="12" fill="#6c675d">flock:v1 (AsyncStorage)</text>
+          <line x1="610" y1="105" x2="650" y2="105" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arr)"></line>
+
+          <rect x="650" y="40" width="190" height="130" rx="10" fill="#fdf6e8" stroke="#c9a24b" stroke-width="2"></rect>
+          <text x="745" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="#35322b">Reopen app</text>
+          <text x="745" y="100" text-anchor="middle" font-size="13" fill="#6c675d">loadFlock reads</text>
+          <text x="745" y="124" text-anchor="middle" font-size="12" fill="#6c675d">deworm day 1 gone;</text>
+          <text x="745" y="148" text-anchor="middle" font-size="12" fill="#6c675d">day 2 still pending</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>Reference route (2–3 stops)</h2>
+    <p class="caption">This route was verified during build, not toured interactively — label it reference only.</p>
+    <div class="stop"><span class="num">1</span><strong><code>flock-calendar/src/app/index.tsx</code></strong> — CalendarScreen. Renders the month grid; tapping a date pushes <code>/day/&lt;date&gt;</code>. Also holds "Add batch"/"Add task" entry points.</div>
+    <div class="stop"><span class="num">2</span><strong><code>flock-calendar/src/app/day/[date].tsx</code></strong> — DayListScreen. <code>handleCheck(ruleId, date)</code> writes a <code>Completion</code> and filters it out of pending tasks; multi-day deworming advances automatically.</div>
+    <div class="stop"><span class="num">3</span><strong><code>flock-calendar/src/storage/store.ts</code></strong> — <code>loadFlock</code> / <code>saveFlock</code> wrap AsyncStorage under key <code>flock:v1</code>. Everything persists here; nothing lives in memory only.</div>
+  </section>
+
+  <section>
+    <h2>To change this, start here</h2>
+    <div class="pointer"><b>Change the care rules</b> (vaccines, deworming, cleaning intervals): edit <code>flock-calendar/src/schedule/poultry.ts</code> — the <code>STANDARD_LAYER_RULES</code> array.</div>
+    <div class="pointer"><b>Change what counts as "due today"</b>: edit <code>flock-calendar/src/schedule/rules.ts</code> — the <code>isRuleDueOn</code> function.</div>
+    <div class="pointer"><b>Change the daily check-off screen</b>: edit <code>flock-calendar/src/app/day/[date].tsx</code> and <code>flock-calendar/src/components/TaskRow.tsx</code>.</div>
+    <div class="pointer"><b>Change the setup questions</b>: edit <code>flock-calendar/src/app/setup.tsx</code> and <code>flock-calendar/src/schedule/build.ts</code>.</div>
+  </section>
+
+  <section>
+    <h2>A practice to reuse</h2>
+    <div class="reuse">
+      <p><b>The practice:</strong> derive the UI from stored data instead of storing the UI.</p>
+      <p>Flock Calendar doesn't save "what the calendar shows" — it saves <em>batches, rules, and completions</em>, and derives the calendar grid and day list on every render from those rules (<code>src/schedule/rules.ts</code> + <code>src/storage/store.ts</code>). That means adding a new task type or changing a schedule never requires migrating a saved calendar; you just change the rule logic and the view recomputes.</p>
+      <p><b>Where it's proven:</strong> slice 2's check-off mechanics were verified in isolation before wiring to the UI — the day-list filtering correctly removes completed tasks and advances multi-day deworming.</p>
+      <p><b>Reuse on another project:</strong> whenever you have a recurring schedule, store the <em>rules</em> (what, when, how often) and <em>completions</em> (what's done), then derive the view. Don't store "screen state" — store facts, compute presentation.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>How to run it again</h2>
+    <div class="card">
+      <p><code>cd flock-calendar</code></p>
+      <p><code>bunx expo start</code> — opens Expo DevTools; press <code>a</code> for Android emulator, <code>i</code> for iOS simulator, or scan the QR with Expo Go.</p>
+      <p class="pointer"><b>Note:</strong> <code>@react-native-async-storage/async-storage</code> has native code, so Expo Go won't include it. For a device/demo build, use <code>bunx expo run:android</code> or <code>bunx expo run:ios</code> (a development build) instead.</p>
+      <p><b>Source commit for this map:</strong> <code>9a51c33</b> ("Tick slice 4 complete"). This is a snapshot and can drift as you keep building.</p>
+    </div>
+  </section>
+
+  <section>
+    <details>
+      <summary>Implementation notes (reference)</summary>
+      <div class="body">
+        <ul>
+          <li>All four build slices are complete and committed: setup+calendar, day list+check-off, add batch/custom task, empty day+polish.</p>
+          <li>Data model: <code>Batch</code>, <code>Rule</code> (with <code>dueDate</code> for custom one-offs), <code>Completion</code> — all in <code>src/storage/store.ts</code>.</li>
+          <li>No external services, no AI model, no backend, no accounts — offline-first, single-user PoC.</li>
+          <li>Styling: nativewind (Tailwind) with an eco palette in <code>flock-calendar/global.css</code>.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <footer>
+    App map for Flock Calendar · generated from finished code · source commit <code>9a51c33</code>. Next step: <code>6-ship</code> — prepare the demo video and public GitHub repository.
+  </footer>
+</main>
+</body>
+</html>
