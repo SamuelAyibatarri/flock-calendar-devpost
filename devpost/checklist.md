@@ -19,7 +19,7 @@ Build mode: fast
   Learner check: Open the app, run setup, confirm the calendar shows what you expect for your flock.
   Commit: `Set up flock and generate calendar`
 
-- [ ] **2. Tap a date, see its tasks, check them off**
+- [x] **2. Tap a date, see its tasks, check them off**
   Becomes usable: Tapping a calendar date opens a day list (that day + next 7 days) with checkboxes; checking off saves completion and removes it from the list; a multi-day deworming advances day-by-day.
   Why now: Check-off is the daily loop — what Monday actually does every day. It's the second half of the kernel after calendar generation.
   PRD ref: `prd.md > Features and Behavior > Tasks and check-off`, `> Calendar and day list`
