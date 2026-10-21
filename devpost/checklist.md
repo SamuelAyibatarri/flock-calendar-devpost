@@ -29,7 +29,7 @@ Build mode: fast
   Learner check: Open a date, check off a task, confirm it's gone and multi-day tasks advance.
   Commit: `Tap date, see tasks, check off`
 
-- [ ] **3. Add another batch and a custom task**
+- [x] **3. Add another batch and a custom task**
   Becomes usable: Add a second flock batch (bird type, count, age) and a custom task to any date; both appear on their dates.
   Why now: Multiple batches at different ages was in Monday's problem; this proves the schedule works per-batch, not just once.
   PRD ref: `prd.md > Features and Behavior > Adding batches and custom tasks`
