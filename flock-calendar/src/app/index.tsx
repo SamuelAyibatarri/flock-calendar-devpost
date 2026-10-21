@@ -109,7 +109,10 @@ export default function CalendarScreen() {
     <View className="flex-1 bg-card p-4">
       <View className="flex-row items-center justify-between mb-4">
         <View>
-          <Text className="text-primary font-bold text-xl">Flock Calendar</Text>
+          <View className="flex-row items-center gap-1 mb-1">
+            <Text className="text-xl">🐔</Text>
+            <Text className="text-primary font-bold text-xl">Flock Calendar</Text>
+          </View>
           <Text className="text-muted-foreground">
             {batches.length} batch(es) tracked
           </Text>
