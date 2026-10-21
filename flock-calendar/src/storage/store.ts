@@ -28,6 +28,7 @@ export type Rule = {
   startOffsetDays?: number; // days after hatch when first due
   durationDays?: number; // multi-day task length
   timesPerDay?: number;
+  dueDate?: string; // for custom one-off tasks: the exact date
 };
 
 export type Completion = {

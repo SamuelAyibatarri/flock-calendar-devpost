@@ -3,16 +3,22 @@ import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react
 import { useRouter } from 'expo-router';
 import {
   loadFlock,
+  saveFlock,
   type FlockData,
   type Rule,
   type Batch,
 } from '@/storage/store';
 import { isRuleDueOn } from '@/schedule/rules';
+import BatchAdder from '@/components/BatchAdder';
+import CustomTaskAdder from '@/components/CustomTaskAdder';
 
 export default function CalendarScreen() {
   const router = useRouter();
   const [data, setData] = useState<FlockData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [addBatchOpen, setAddBatchOpen] = useState(false);
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [addTaskBatchId, setAddTaskBatchId] = useState<string | null>(null);
 
   useEffect(() => {
     loadFlock().then((d) => {
@@ -72,6 +78,33 @@ export default function CalendarScreen() {
     [rules, batches, completions],
   );
 
+  const reload = () => {
+    loadFlock().then(setData);
+  };
+
+  // Render either the calendar view or an adder overlay (single surface at a time)
+  if (addBatchOpen) {
+    return (
+      <BatchAdder
+        onDone={() => {
+          reload();
+          setAddBatchOpen(false);
+        }}
+      />
+    );
+  }
+  if (addTaskOpen && addTaskBatchId) {
+    return (
+      <CustomTaskAdder
+        batchId={addTaskBatchId}
+        onDone={() => {
+          reload();
+          setAddTaskOpen(false);
+        }}
+      />
+    );
+  }
+
   return (
     <View className="flex-1 bg-card p-4">
       <View className="flex-row items-center justify-between mb-4">
@@ -81,12 +114,28 @@ export default function CalendarScreen() {
             {batches.length} batch(es) tracked
           </Text>
         </View>
-        <TouchableOpacity
-          className="px-3 py-1.5 rounded border border-border"
-          onPress={() => router.push('/setup')}
-        >
-          <Text className="text-sm text-foreground">Re-setup</Text>
-        </TouchableOpacity>
+        <View className="flex-row gap-1">
+          <TouchableOpacity
+            className="px-3 py-1.5 rounded border border-border"
+            onPress={() => router.push('/setup')}
+          >
+            <Text className="text-sm text-foreground">Re-setup</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="px-3 py-1.5 rounded bg-secondary text-secondary-foreground"
+            onPress={() => setAddBatchOpen(true)}
+          >
+            <Text className="text-sm">Add batch</Text>
+          </TouchableOpacity>
+          {addTaskBatchId && (
+            <TouchableOpacity
+              className="px-3 py-1.5 rounded bg-accent text-accent-foreground"
+              onPress={() => setAddTaskOpen(true)}
+            >
+              <Text className="text-sm">Add task</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <FlatList
@@ -110,7 +159,10 @@ export default function CalendarScreen() {
                   ? 'bg-secondary text-secondary-foreground border-secondary shadow-sm'
                   : 'bg-background text-foreground border-border'
               }`}
-              onPress={() => router.push(`/day/${date}`)}
+              onPress={() => {
+                setAddTaskBatchId(batches[0]?.id ?? null);
+                router.push(`/day/${date}`);
+              }}
             >
               <View className="flex-1">
                 <Text className="font-medium">{label}</Text>
