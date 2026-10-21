@@ -39,7 +39,7 @@ Build mode: fast
   Learner check: Add a batch, add a custom task, confirm both show up where expected.
   Commit: `Add batch and custom task`
 
-- [ ] **4. Empty day handling and polish**
+- [x] **4. Empty day handling and polish**
   Becomes usable: Tapping an empty date shows an empty list with an add-task option; app runs end to end without crashes; eco palette applied throughout.
   Why now: The empty state is a real screen Monday will hit often; polish makes the demo presentable.
   PRD ref: `prd.md > States and Boundaries > Empty day`; `prd.md > Look and Feel`
