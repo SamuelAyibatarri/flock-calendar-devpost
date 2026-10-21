@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flock Calendar — Product Requirements</title>
+<style>
+  :root{
+    --paper:#f6f1e7; --card:#fffdf8; --ink:#35322b; --muted:#6c675d; --line:#e2d7c3;
+    --accent:#b8893a; --accent-soft:#f3e7cf;
+    --green:#3f7d5a; --lemon:#e9c46a; --leaf:#5f8f4e; --cut:#9c4b3f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  main{max-width:900px;margin:0 auto;padding:56px 24px 96px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--accent);font-weight:700;margin:0 0 10px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:42px;line-height:1.1;margin:0 0 14px;letter-spacing:-.01em}
+  .lede{font-size:19px;color:var(--muted);max-width:660px;margin:0 0 22px}
+  .meta{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .pill{background:var(--accent-soft);color:#7a5a1e;border:1px solid #e6d3a8;border-radius:999px;padding:3px 12px;font-weight:600;font-size:12px}
+  section{margin-top:44px}
+  h2{font-family:Georgia,"Times New Roman",serif;font-size:24px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+  h3{font-size:17px;margin:0 0 6px}
+  p{margin:0 0 12px}
+  .callout{background:linear-gradient(135deg,#fbf3df,#f6ead0);border:1px solid #e6d3a8;border-left:5px solid var(--accent);border-radius:12px;padding:24px 26px;margin-top:36px}
+  .callout h2{border:none;margin-bottom:8px;padding-bottom:0}
+  .callout p{margin:0;font-size:17px}
+  .diagram{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 20px 12px;overflow-x:auto}
+  .diagram svg{display:block;width:100%;min-width:760px;height:auto}
+  .caption{font-size:13px;color:var(--muted);text-align:center;margin:6px 0 8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .swatches{display:flex;gap:10px;margin:6px 0 14px}
+  .sw{width:34px;height:34px;border-radius:9px;border:1px solid rgba(0,0,0,.08)}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:12px;overflow:hidden}
+  summary{cursor:pointer;list-style:none;padding:15px 20px;font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary .mark{width:22px;height:22px;border-radius:6px;flex:0 0 22px;display:grid;place-items:center;font-size:13px;font-weight:800;color:#fff;background:var(--green)}
+  summary .hint{margin-left:auto;font-weight:500;font-size:13px;color:var(--muted)}
+  details .body{padding:0 20px 18px 52px;color:var(--muted)}
+  details .body p{margin:0 0 8px}
+  details .body ul{margin:0;padding-left:18px}
+  .crit{background:#f2f8f3;border-left:3px solid var(--green);border-radius:6px;padding:6px 10px;margin:6px 0;font-size:14px;color:#2f5a41}
+  .crit::before{content:"✓ ";font-weight:800;color:var(--green)}
+  details[data-kind="open"] summary .mark{background:var(--cut)}
+  details[data-kind="deferred"] summary .mark{background:#7a6a4f}
+  .assume{background:#fdf6e8;border:1px dashed #d9b86a;border-radius:8px;padding:8px 12px;font-size:14px;color:#7a5a1e;margin:8px 0}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Devpost Learn · Build With AI: Basics · PRD</p>
+  <h1>Flock Calendar</h1>
+  <p class="lede">A care schedule for layer farms that asks a few setup questions, generates a calendar of recurring flock care, and lets the farmer see and check off what's due — so the routine lives in the app, not in his head.</p>
+  <p class="meta"><span class="pill">Status: approved</span> <span>Markdown is canonical · this page is a companion</span></p>
+
+  <section class="diagram">
+    <h2>The core journey</h2>
+    <svg viewBox="0 0 920 175" role="img" aria-label="Setup questionnaire, generated calendar, calendar main screen, click a date to open the day list, check tasks off, and persist between sessions.">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#8a6d3b"></path>
+        </marker>
+      </defs>
+      <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+        <rect x="8" y="22" width="140" height="128" rx="12" fill="#fdf6e8" stroke="#c9a24b" stroke-width="2"></rect>
+        <text x="78" y="60" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Setup</text>
+        <text x="78" y="80" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">questionnaire</text>
+        <text x="78" y="106" text-anchor="middle" font-size="11" fill="#6c675d">first run</text>
+
+        <rect x="168" y="22" width="140" height="128" rx="12" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+        <text x="238" y="60" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Generated</text>
+        <text x="238" y="80" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">calendar</text>
+        <text x="238" y="106" text-anchor="middle" font-size="11" fill="#6c675d">editable</text>
+
+        <rect x="328" y="22" width="140" height="128" rx="12" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+        <text x="398" y="60" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Calendar</text>
+        <text x="398" y="80" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">(main)</text>
+        <text x="398" y="106" text-anchor="middle" font-size="11" fill="#6c675d">click a date</text>
+
+        <rect x="488" y="22" width="140" height="128" rx="12" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+        <text x="558" y="60" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Day list</text>
+        <text x="558" y="80" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">opens</text>
+        <text x="558" y="106" text-anchor="middle" font-size="11" fill="#6c675d">day + upcoming</text>
+
+        <rect x="648" y="22" width="140" height="128" rx="12" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+        <text x="718" y="60" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Check off</text>
+        <text x="718" y="80" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">tasks</text>
+        <text x="718" y="106" text-anchor="middle" font-size="11" fill="#6c675d">multi-day advances</text>
+
+        <rect x="808" y="22" width="104" height="128" rx="12" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+        <text x="860" y="70" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Persists</text>
+        <text x="860" y="96" text-anchor="middle" font-size="11" fill="#6c675d">between sessions</text>
+
+        <line x1="148" y1="86" x2="166" y2="86" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arrow)"></line>
+        <line x1="308" y1="86" x2="326" y2="86" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arrow)"></line>
+        <line x1="468" y1="86" x2="486" y2="86" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arrow)"></line>
+        <line x1="628" y1="86" x2="646" y2="86" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arrow)"></line>
+        <line x1="788" y1="86" x2="806" y2="86" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arrow)"></line>
+      </g>
+    </svg>
+    <p class="caption">First run asks a few questions → the app generates a calendar → the farmer sees and checks off what's due, and it's all still there next time.</p>
+  </section>
+
+  <section>
+    <h2>Screens and layout</h2>
+    <div class="grid">
+      <div class="card"><p class="tag" style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700">First run</p><h3>Setup questionnaire</h3><p>Bird type, your own schedule (student or worker), number of birds, how long they've lived, checkups per day, feedings per day, vaccine/deworm timing.</p></div>
+      <div class="card"><p class="tag" style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700">Main</p><h3>Calendar section</h3><p>Dates show what's marked. Clicking a date opens the day list.</p></div>
+      <div class="card"><p class="tag" style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700">Detail</p><h3>Day list section</h3><p>The selected day's tasks plus upcoming days. Each task is a row with a checkbox.</p></div>
+      <div class="card"><p class="tag" style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700">Flows</p><h3>Add batch · add task</h3><p>Add another batch (type, count, age), or add a custom task to any date.</p></div>
+    </div>
+    <div class="assume"><strong>Decision:</strong> the calendar is a <strong>month view</strong>, and "upcoming days" means the <strong>next 7 days</strong>.</div>
+  </section>
+
+  <section>
+    <h2>Look and feel</h2>
+    <div class="card">
+      <div class="swatches">
+        <div class="sw" style="background:#5f8f4e"></div>
+        <div class="sw" style="background:#8fbf6a"></div>
+        <div class="sw" style="background:#e9c46a"></div>
+        <div class="sw" style="background:#f4e2a0"></div>
+      </div>
+      <p>Eco-friendly greens, lemon, and yellow. A farm vibe on a phone — plain, warm, readable, high-contrast enough for quick use outdoors. A bird logo; clear calendar section and list section. Avoid generic AI-app styling and clutter.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Features and behavior</h2>
+
+    <details open>
+      <summary><span class="mark">1</span> Setup questionnaire <span class="hint">click to collapse</span></summary>
+      <div class="body">
+        <p>On first run, asks: bird type; the caretaker's own schedule (student or worker); number of birds; how long they've lived (age); checkups per day; feedings per day; vaccine and deworm timing.</p>
+        <p>Inputs are <strong>constrained</strong> — you cannot enter something that makes no sense. From the answers, the app generates a suitable calendar; he can adjust it or add dates himself.</p>
+        <div class="crit">Completing setup produces a calendar with tasks on dates.</div>
+        <div class="crit">There is no way to submit an invalid value (zero birds, a nonsensical date).</div>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="mark">2</span> The generated calendar <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>The app generates a <strong>default schedule</strong> from bird age and standard intervals; he can <strong>adjust</strong> it or <strong>enter dates manually</strong>. <strong>Multi-day tasks</strong> (e.g., deworming) span consecutive days.</p>
+        <div class="crit">The generated calendar reflects the bird age and the caretaker's schedule.</div>
+        <div class="crit">Editing a generated task updates the calendar.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="mark">3</span> Calendar and day list <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>The calendar shows dates; clicking a date opens the list. The list shows the <strong>selected day plus upcoming days</strong>. An <strong>empty day</strong> shows nothing, plus a way to add to that day.</p>
+        <div class="crit">Clicking a date shows that day's tasks and the following days'.</div>
+        <div class="crit">An empty day shows an empty list with an add affordance.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="mark">4</span> Tasks and check-off <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>Task types: <strong>checkup, feed, water, pick eggs</strong> (recurring, at the frequencies he set — his day runs morning, afternoon, night); <strong>cage cleaning</strong> (on some days); <strong>vaccines</strong>; <strong>deworming</strong> (multi-day).</p>
+        <p>Mark done with a <strong>checkbox</strong>. Marking day 1 of a multi-day task <strong>advances to day 2</strong>.</p>
+        <div class="crit">Checking a task clears it from the pending list for that day.</div>
+        <div class="crit">A 3-day deworming advances through days 1 → 2 → 3 as each is checked off.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="mark">5</span> Adding batches and custom tasks <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>Add another batch later (bird type, count, age). Add a custom task to any date.</p>
+        <div class="crit">A new batch appears with its own schedule.</div>
+        <div class="crit">A custom task appears on the chosen date.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="mark">6</span> History <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>A simple record of completed tasks.</p>
+        <div class="crit">A completed task appears in the history for its date.</div>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>States and boundaries</h2>
+    <div class="grid">
+      <div class="card"><h3>First use</h3><p>Setup questionnaire, because nothing is configured yet.</p></div>
+      <div class="card"><h3>Normal use</h3><p>Calendar + day list.</p></div>
+      <div class="card"><h3>Empty day</h3><p>Empty list plus an add affordance.</p></div>
+      <div class="card"><h3>Input</h3><p>Constrained; invalid entries cannot be submitted (no error state needed for bad input).</p></div>
+      <div class="card"><h3>Persistence</h3><p>The schedule and the day's tasks remain between sessions; no account required.</p></div>
+      <div class="card"><h3>Boundary</h3><p>One caretaker; layers only; no sharing or multi-user.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What we're building</h2>
+    <div class="card">
+      <ul>
+        <li>First-run setup questionnaire (constrained inputs).</li>
+        <li>Generated, editable calendar from bird age and intervals.</li>
+        <li>Calendar view with a day list (selected day + upcoming days).</li>
+        <li>Recurring daily tasks (checkup, feed, water, pick eggs) at set frequencies.</li>
+        <li>Cage cleaning on some days.</li>
+        <li>Vaccines and multi-day deworming.</li>
+        <li>Checkbox check-off; multi-day tasks advance.</li>
+        <li>Add another batch; add a custom task to any date.</li>
+        <li>A simple history of completed tasks.</li>
+        <li>Persistence between sessions; no account.</li>
+        <li>Mobile-friendly, eco farm look.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Deferred from the POC</h2>
+    <details data-kind="deferred">
+      <summary><span class="mark">→</span> Out for now <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Notifications / reminders</strong> — the PoC proves the schedule, not delivery.</li>
+          <li><strong>Other poultry and livestock</strong> — kept out so the demo stays sharp; the schedule should be data so this is cheap later.</li>
+          <li><strong>Treatment records and notes per batch</strong> — later.</li>
+          <li><strong>Reports and trends</strong> — later.</li>
+          <li><strong>Native mobile app</strong> — the PoC is mobile-friendly; native is later.</li>
+          <li><strong>Multi-caretaker / sharing</strong> — not needed to prove the kernel.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <details data-kind="open" open>
+      <summary><span class="mark">?</span> Resolved at review <span class="hint">click to collapse</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Calendar view</strong> — month view.</li>
+          <li><strong>"Upcoming days" scope</strong> — next 7 days.</li>
+          <li><strong>History</strong> — included as a simple record of completed tasks.</li>
+        </ul>
+        <p><strong>One left for <code>4-spec</code>:</strong> runs on a phone as a mobile-friendly web app, or native? (Web is the likely default.)</p>
+      </div>
+    </details>
+  </section>
+
+  <footer>
+    This is the complete product definition for the proof of concept. The next step, <code>4-spec</code>, decides how it's built.
+  </footer>
+</main>
+</body>
+</html>

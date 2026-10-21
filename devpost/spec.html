@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flock Calendar — Technical Spec</title>
+<style>
+  :root{
+    --paper:#f6f1e7; --card:#fffdf8; --ink:#35322b; --muted:#6c675d; --line:#e2d7c3;
+    --accent:#b8893a; --accent-soft:#f3e7cf;
+    --green:#3f7d5a; --lemon:#e9c46a; --leaf:#5f8f4e; --cut:#9c4b3f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  main{max-width:920px;margin:0 auto;padding:56px 24px 96px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--accent);font-weight:700;margin:0 0 10px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:42px;line-height:1.1;margin:0 0 14px;letter-spacing:-.01em}
+  .lede{font-size:19px;color:var(--muted);max-width:680px;margin:0 0 22px}
+  .meta{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .pill{background:var(--accent-soft);color:#7a5a1e;border:1px solid #e6d3a8;border-radius:999px;padding:3px 12px;font-weight:600;font-size:12px}
+  section{margin-top:44px}
+  h2{font-family:Georgia,"Times New Roman",serif;font-size:24px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+  h3{font-size:17px;margin:0 0 6px}
+  p{margin:0 0 12px}
+  code{background:#f2f6f1;padding:1px 6px;border-radius:6px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#2f5a41}
+  pre{background:#fbf8f2;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.5;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#35322b;overflow-x:auto;margin:0 0 14px}
+  .callout{background:linear-gradient(135deg,#fbf3df,#f6ead0);border:1px solid #e6d3a8;border-left:5px solid var(--accent);border-radius:12px;padding:24px 26px;margin-top:36px}
+  .callout h2{border:none;margin-bottom:8px;padding-bottom:0}
+  .callout p{margin:0;font-size:17px}
+  .diagram{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 20px 12px;overflow-x:auto}
+  .diagram svg{display:block;width:100%;min-width:760px;height:auto}
+  .caption{font-size:13px;color:var(--muted);text-align:center;margin:6px 0 8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .swatches{display:flex;gap:10px;margin:6px 0 14px}
+  .sw{width:34px;height:34px;border-radius:9px;border:1px solid rgba(0,0,0,.08)}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:12px;overflow:hidden}
+  summary{cursor:pointer;list-style:none;padding:15px 20px;font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary .mark{width:22px;height:22px;border-radius:6px;flex:0 0 22px;display:grid;place-items:center;font-size:13px;font-weight:800;color:#fff;background:var(--green)}
+  summary .hint{margin-left:auto;font-weight:500;font-size:13px;color:var(--muted)}
+  details .body{padding:0 20px 18px 52px;color:var(--muted)}
+  details .body p{margin:0 0 8px}
+  details .body ul{margin:0;padding-left:18px}
+  .crit{background:#f2f8f3;border-left:3px solid var(--green);border-radius:6px;padding:6px 10px;margin:6px 0;font-size:14px;color:#2f5a41}
+  .crit::before{content:"✓ ";font-weight:800;color:var(--green)}
+  details[data-kind="deferred"] summary .mark{background:#7a6a4f}
+  details[data-kind="open"] summary .mark{background:var(--cut)}
+  .assume{background:#fdf6e8;border:1px dashed #d9b86a;border-radius:8px;padding:8px 12px;font-size:14px;color:#7a5a1e;margin:8px 0}
+  .doclink{color:var(--green);text-decoration:none;border-bottom:1px solid transparent}
+  .doclink:hover{border-bottom-color:var(--green)}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Devpost Learn · Build With AI: Basics · Spec</p>
+  <h1>Flock Calendar</h1>
+  <p class="lede">A care schedule for layer farms that asks a few setup questions, generates a calendar of recurring flock care, and lets the farmer see and check off what's due — so the routine lives in the app, not in his head.</p>
+  <p class="meta"><span class="pill">Status: approved</span> <span>Markdown is canonical · this page is a companion</span></p>
+
+  <section class="diagram">
+    <h2>How it fits together</h2>
+    <svg viewBox="0 0 920 200" role="img" aria-label="Monday opens the app, storage is checked, if empty setup runs, the built-in poultry schedule combines with answers into rules stored in AsyncStorage, the calendar screen shows dates, tapping a date opens the day list, checking off a task saves a completion.">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#8a6d3b"></path>
+        </marker>
+      </defs>
+      <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+        <rect x="10" y="40" width="150" height="120" rx="12" fill="#fdf6e8" stroke="#c9a24b" stroke-width="2"></rect>
+        <text x="85" y="84" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Setup</text>
+        <text x="85" y="104" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">questionnaire</text>
+        <text x="85" y="130" text-anchor="middle" font-size="11" fill="#6c675d">first run, empty</text>
+
+        <rect x="180" y="20" width="150" height="120" rx="12" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+        <text x="255" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Built-in</text>
+        <text x="255" y="82" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">poultry schedule</text>
+        <text x="255" y="110" text-anchor="middle" font-size="11" fill="#6c675d">age-based rules</text>
+
+        <rect x="350" y="40" width="150" height="120" rx="12" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+        <text x="425" y="82" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Schedule</text>
+        <text x="425" y="102" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">generator</text>
+        <text x="425" y="130" text-anchor="middle" font-size="11" fill="#6c675d">answers → rules</text>
+
+        <rect x="520" y="20" width="150" height="120" rx="12" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+        <text x="595" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">AsyncStorage</text>
+        <text x="595" y="82" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">(file on phone)</text>
+        <text x="595" y="110" text-anchor="middle" font-size="11" fill="#6c675d">batches · rules · completions</text>
+
+        <rect x="690" y="40" width="150" height="120" rx="12" fill="#ffffff" stroke="#d9c9a3" stroke-width="2"></rect>
+        <text x="765" y="84" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">Calendar</text>
+        <text x="765" y="104" text-anchor="middle" font-size="15" font-weight="700" fill="#35322b">+ Day List</text>
+        <text x="765" y="130" text-anchor="middle" font-size="11" fill="#6c675d">what's due · checkboxes</text>
+      </g>
+      <line x1="160" y1="100" x2="178" y2="100" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arrow)"></line>
+      <line x1="330" y1="100" x2="348" y2="100" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arrow)"></line>
+      <line x1="500" y1="100" x2="518" y2="100" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arrow)"></line>
+      <line x1="670" y1="100" x2="688" y2="100" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#arrow)"></line>
+    </svg>
+    <p class="caption">Storage drives everything: empty storage → setup; otherwise load batches/rules and draw the calendar.</p>
+  </section>
+
+  <section>
+    <h2>How this works, in plain language</h2>
+    <div class="card">
+      <p>Flock Calendar is a phone app that holds a layer farm's care routine so Monday doesn't have to remember it himself.</p>
+      <p>When he first opens the app, he answers a short setup questionnaire: what kind of birds he has, how many, how old they are, whether he's a student or worker, how many times a day he feeds and checks the birds, and when vaccines/deworming happen. The app takes those answers and a built-in standard poultry schedule (age-based rules for vaccines, deworming, cage cleaning, water changes) and generates a calendar. Every date on the calendar shows what's due that day.</p>
+      <p>Monday opens the app and sees a calendar. He taps a date, and a list opens showing that day's tasks plus the next few days — things like feed, water, check up, pick eggs, cage cleaning, deworming, vaccines. Each task has a checkbox. When he checks one off, it's saved so it won't show up again tomorrow. If it's a multi-day task like deworming, checking day 1 off moves to day 2.</p>
+      <p>He can add another batch of birds later, or add a custom task to any day. Everything is saved on his phone, so when he closes and reopens the app, the schedule and his progress are still there. No accounts, no internet needed, no backend — it all lives in a small file on his phone.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The core journey through the system</h2>
+    <div class="card">
+      <ol>
+        <li>Monday opens the app. The <strong>Setup</strong> screen shows if nothing is saved yet (<code>src/app/setup.tsx</code>). He answers the questionnaire.</li>
+        <li>The app merges his answers with the <strong>built-in poultry schedule</strong> (<code>src/schedule/poultry.ts</code>) into per-batch care rules (<code>src/schedule/build.ts</code>) and saves them (<code>src/storage/store.ts</code>).</li>
+        <li>He's taken to the <strong>calendar</strong> (<code>src/app/index.tsx</code>). Each date shows how many tasks are due, computed live from the rules.</li>
+        <li>He taps a date → the <strong>day list</strong> (<code>src/app/day/[date].tsx</code>) opens: that day's tasks plus the next 7 days.</li>
+        <li>He checks a task off → it's saved to completions (<code>src/storage/store.ts</code>) and drops off the pending list. A multi-day task advances to its next day.</li>
+        <li>He can add a batch or a custom task → saved as new rules/entries.</li>
+        <li>He reopens the app → AsyncStorage loads → same calendar, same progress.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <h2>Stack</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Expo SDK ~58</h3>
+        <p>The runtime and build toolchain for a React Native app that runs on phone and can be recorded from an emulator for the demo video.</p>
+        <a class="doclink" href="https://docs.expo.dev/" target="_blank" rel="noopener">Docs</a>
+      </div>
+      <div class="card">
+        <h3>Expo Router ~58</h3>
+        <p>File-based routing under <code>src/app/</code>; screens are route modules.</p>
+        <a class="doclink" href="https://docs.expo.dev/router/introduction/" target="_blank" rel="noopener">Docs</a>
+      </div>
+      <div class="card">
+        <h3>React Native 0.88</h3>
+        <p>UI framework; no DOM — View, Text, FlatList, Pressable.</p>
+        <a class="doclink" href="https://reactnative.dev/" target="_blank" rel="noopener">Docs</a>
+      </div>
+      <div class="card">
+        <h3>React 19</h3>
+        <p>Component model with hooks.</p>
+        <a class="doclink" href="https://react.dev/" target="_blank" rel="noopener">Docs</a>
+      </div>
+      <div class="card">
+        <h3>nativewind 4.2.7</h3>
+        <p>Tailwind utility classes in React Native (eco palette: greens, lemon, yellow).</p>
+        <a class="doclink" href="https://www.nativewind.dev/" target="_blank" rel="noopener">Docs</a>
+      </div>
+      <div class="card">
+        <h3>Tailwind CSS ^3.4</h3>
+        <p>Utility classes consumed by nativewind.</p>
+        <a class="doclink" href="https://tailwindcss.com/" target="_blank" rel="noopener">Docs</a>
+      </div>
+      <div class="card">
+        <h3>@react-native-async-storage/async-storage</h3>
+        <p>Key-value file on the phone where batches, rules, and completions persist. To be added.</p>
+        <a class="doclink" href="https://react-native-async-storage.github.io/async-storage/" target="_blank" rel="noopener">Docs</a>
+      </div>
+    </div>
+    <p class="assume"><strong>No external services.</strong> No AI model, no backend, no accounts, no API keys, no hosting required for the PoC. Zero network calls.</p>
+  </section>
+
+  <section>
+    <h2>Where it runs and how someone tries it</h2>
+    <div class="card">
+      <h3>Runs on</h3>
+      <p>An Expo development build or Expo Go app on a phone, or an emulator/simulator on a laptop. Also works on web (React Native Web) but the PoC targets phone.</p>
+      <h3>Start</h3>
+      <p><code>cd flock-calendar</code> then <code>npx expo start</code> — opens Expo DevTools; press <code>a</code> for Android emulator, <code>i</code> for iOS simulator, or scan the QR with Expo Go on a phone.</p>
+      <h3>Demo recording</h3>
+      <p>Run the app, record the screen (emulator or phone), show: setup → calendar → tap date → day list → check off → reopen and it's still there. Upload the recording as the 1–3 minute demo video; push the repo to GitHub.</p>
+      <h3>Deployment</h3>
+      <p>Optional, not required. If Monday wants others to try it directly, Expo Application Services (EAS) or <code>expo publish</code> can host it; record target and steps in <code>6-ship</code>. Reviewers won't clone or run code — the video is the proof.</p>
+      <h3>Environment</h3>
+      <p>Node.js, npx/bun, Expo CLI. No API keys.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Look and feel</h2>
+    <div class="card">
+      <div class="swatches">
+        <div class="sw" style="background:#5f8f4e"></div>
+        <div class="sw" style="background:#8fbf6a"></div>
+        <div class="sw" style="background:#e9c46a"></div>
+        <div class="sw" style="background:#f4e2a0"></div>
+      </div>
+      <p>Eco-friendly — greens, lemon, yellow. Defined as CSS variables in <code>global.css</code>, consumed via nativewind classes like <code>bg-primary</code>, <code>bg-secondary</code>, <code>text-accent-foreground</code>.</p>
+      <p><strong>Typography:</strong> Inter (regular, medium, bold) via <code>nativewind/preset</code> font family tokens.</p>
+      <p><strong>Mood:</strong> farm vibe, phone-first — plain, warm, readable, high-contrast enough for quick use outdoors. Spacious but not sparse; big tap targets.</p>
+      <p><strong>Identity:</strong> bird logo (placeholder until an actual logo asset exists); clear calendar section and list section.</p>
+      <p class="assume"><strong>Stack constraint:</strong> nativewind on React Native supports most Tailwind utilities; web-only features (complex grid, backdrop filters) should be avoided.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Components</h2>
+    <details open>
+      <summary><span class="mark">1</span> CalendarScreen <span class="hint">click to collapse</span></summary>
+      <div class="body">
+        <p>Month grid; each date cell shows a dot/count when tasks are due; tapping a date navigates to the day list.</p>
+        <p>Talks to: <code>src/schedule/rules.ts</code> for "due on this date?" logic; AsyncStorage via store for batches/rules.</p>
+        <p class="crit">Implements <code>prd.md &gt; Features and Behavior &gt; The generated calendar</code>, <code>&gt; Calendar and day list</code>.</p>
+      </div>
+    </details>
+    <details>
+      <summary><span class="mark">2</span> DayListScreen <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>Shows the selected day's tasks plus upcoming days; each row is a task label with a checkbox; checking off saves completion; multi-day tasks advance.</p>
+        <p>Talks to: <code>src/storage/store.ts</code> (read tasks, write completions).</p>
+        <p class="crit">Implements <code>prd.md &gt; Features and Behavior &gt; Tasks and check-off</code>, <code>&gt; Calendar and day list</code>.</p>
+      </div>
+    </details>
+    <details>
+      <summary><span class="mark">3</span> SetupScreen <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>First-run questionnaire (bird type, caretaker schedule, bird count, age, checkups/day, feedings/day, vaccine/deworm timing); constrained inputs; generates the calendar from answers + built-in schedule.</p>
+        <p>Talks to: <code>src/schedule/build.ts</code> (answers → rules), <code>src/storage/store.ts</code> (persist batches/rules).</p>
+        <p class="crit">Implements <code>prd.md &gt; Features and Behavior &gt; Setup questionnaire</code>, <code>&gt; The generated calendar</code>.</p>
+      </div>
+    </details>
+    <details>
+      <summary><span class="mark">4</span> TaskRow <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>A single task row — label, checkbox, due-state styling. Presentational only.</p>
+        <p class="crit">Implements <code>prd.md &gt; Features and Behavior &gt; Tasks and check-off</code>.</p>
+      </div>
+    </details>
+    <details>
+      <summary><span class="mark">5</span> CustomTaskAdder <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>Small form to add a custom task to any date.</p>
+        <p>Talks to: <code>src/storage/store.ts</code>.</p>
+        <p class="crit">Implements <code>prd.md &gt; Features and Behavior &gt; Adding batches and custom tasks</code>.</p>
+      </div>
+    </details>
+    <details>
+      <summary><span class="mark">6</span> BatchAdder <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>Small form to add another batch (bird type, count, age).</p>
+        <p>Talks to: <code>src/storage/store.ts</code>.</p>
+        <p class="crit">Implements <code>prd.md &gt; Features and Behavior &gt; Adding batches and custom tasks</code>.</p>
+      </div>
+    </details>
+    <details>
+      <summary><span class="mark">7</span> ScheduleGenerator (module, not UI) <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <p>Pure function — takes setup answers + standard poultry rules → produces per-batch care rules with due dates.</p>
+        <p>Talks to: <code>src/schedule/poultry.ts</code> (standard schedule data).</p>
+        <p class="crit">Implements <code>prd.md &gt; Features and Behavior &gt; The generated calendar</code>.</p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Data model</h2>
+    <div class="card">
+      <p>Everything stored in AsyncStorage as JSON under a single key <code>flock:v1</code>. Where it lives: on the phone. How it gets updated: writes on setup, task completion, add batch/task. What happens when the user leaves and comes back: AsyncStorage loads on app open; calendar and day list re-derive from the stored rules.</p>
+      <p><strong>Batch</strong> — <code>id: string</code>, <code>label: string</code> (e.g. "Batch A"), <code>birdCount: number</code>, <code>hatchDate: string</code> (ISO date; age is derived, not stored)</p>
+      <p><strong>Rule</strong> — <code>id: string</code>, <code>batchId: string</code>, <code>kind: 'checkup'|'feed'|'water'|'eggs'|'cleaning'|'vaccine'|'deworm'|'custom'</code>, <code>title: string</code>, <code>intervalDays?: number</code> (recurring), <code>startOffsetDays?: number</code> (hatch-relative like vaccines), <code>durationDays?: number</code> (multi-day like deworming), <code>timesPerDay?: number</code> (for feed/water/checkup)</p>
+      <p><strong>Completion</strong> — <code>ruleId: string</code>, <code>date: string</code> (ISO date), <code>doneAt: string</code> (ISO timestamp)</p>
+      <p><strong>Derived (not stored):</strong> the calendar grid — for any date, each rule answers "due today?"; hide anything already in completions for that date.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>File structure</h2>
+    <pre>flock-calendar/
+├── devpost/                  # Devpost learning workspace (learner profile, scope, PRD, spec, checklist)
+├── src/
+│   ├── app/                  # Expo Router screens (route = screen)
+│   │   ├── _layout.tsx       # app shell: native providers, navigation container, theme wrapper
+│   │   ├── index.tsx         # calendar screen (main); first-run gate → setup if empty
+│   │   ├── setup.tsx         # setup questionnaire screen
+│   │   └── day/
+│   │       └── [date].tsx    # day list screen (selected day + upcoming days)
+│   ├── components/           # shared UI
+│   │   ├── TaskRow.tsx
+│   │   ├── CalendarCell.tsx
+│   │   ├── BatchAdder.tsx
+│   │   └── CustomTaskAdder.tsx
+│   ├── schedule/             # schedule logic (no UI)
+│   │   ├── rules.ts          # rule types + "due on this date?" logic
+│   │   ├── poultry.ts        # standard layer schedule data (age-based)
+│   │   └── build.ts          # setup answers + schedule → rules
+│   ├── storage/              # persistence
+│   │   └── store.ts          # AsyncStorage load/save for batches, rules, completions
+│   ├── theme/                # styling tokens
+│   │   └── index.ts          # nativewind theme extension (optional; tailwind.config.js holds the palette)
+│   └── global.css            # tailwind directives + eco CSS variables
+├── app.json                  # Expo config (name, slug, icon, orientation, plugins)
+├── babel.config.js           # nativewind babel preset
+├── metro.config.js           # withNativeWind wrapping expo metro config
+├── tailwind.config.js        # tailwind config with nativewind/preset + eco palette
+├── nativewind-env.d.ts       # nativewind type declarations
+├── tsconfig.json             # TypeScript config (extends expo/tsconfig.base, @/* paths)
+├── package.json              # dependencies incl. nativewind, @react-native-async-storage/async-storage
+└── README.md                 # how to start + what to record for the demo</pre>
+  </section>
+
+  <section>
+    <h2>External services and dependencies</h2>
+    <div class="card">
+      <ul>
+        <li><strong>@react-native-async-storage/async-storage</strong> — to be added; local key-value persistence on the phone.</li>
+        <li>No other external services. No AI model, no backend, no accounts, no API keys, no hosting required for the PoC.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Important failure modes</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>AsyncStorage write fails</h3>
+        <p>Show a plain message "Couldn't save — try again" and keep the task unchecked so it still shows on the list.</p>
+      </div>
+      <div class="card">
+        <h3>No data on first open</h3>
+        <p>Show the setup questionnaire (by design, not an error).</p>
+      </div>
+      <div class="card">
+        <h3>Empty day (nothing due)</h3>
+        <p>Show an empty list with an "add task" affordance (by design).</p>
+      </div>
+      <div class="card">
+        <h3>Bad date tapped</h3>
+        <p>The day list renders empty; no crash.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What was simplified and why</h2>
+    <details data-kind="deferred">
+      <summary><span class="mark">→</span> Out for now <span class="hint">click to expand</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>AsyncStorage single JSON file</strong> instead of a hosted database — same data shape, same queries, no infrastructure; the PoC is single-user and offline.</li>
+          <li><strong>No AI model for schedule generation</strong> instead of an LLM-driven planner — the built-in standard poultry schedule is reliable and works offline; a wrong vaccine date is worse than no app.</li>
+          <li><strong>No notifications/reminders</strong> instead of push notifications — the PoC proves the schedule, not delivery.</li>
+          <li><strong>Month view calendar</strong> instead of a full date-picker library — proves the kernel with fewer dependencies.</li>
+          <li><strong>Single caretaker, no accounts</strong> instead of multi-user sync — one phone, one farm.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Decisions and open issues</h2>
+    <details data-kind="open" open>
+      <summary><span class="mark">?</span> Decisions made here <span class="hint">click to collapse</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Stack: Expo + Expo Router + nativewind</strong> — chosen by Monday; phone-first, records cleanly from emulator for the demo video.</li>
+          <li><strong>AsyncStorage single-key JSON</strong> — recommended by me, accepted by Monday.</li>
+          <li><strong>Built-in standard poultry schedule</strong> — recommended by me, accepted by Monday.</li>
+          <li><strong>Month calendar + next 7 days upcoming</strong> — locked at PRD review.</li>
+        </ul>
+        <p><strong>One genuine uncertainty:</strong> runs on a phone as a mobile-friendly web app, or native? — web is the likely default (Expo Router handles both); to be confirmed at build start. This is a <code>4-spec</code> tech decision and doesn't block the spec.</p>
+        <p><strong>Still unresolved:</strong> History — included as a simple record of completed tasks (locked at PRD review). Its UI surface is not yet designed; build-time detail.</p>
+      </div>
+    </details>
+  </section>
+
+  <footer>
+    Markdown at <code>devpost/spec.md</code> stays canonical; this page regenerated after revisions. Next: <code>5-build</code> turns it into ordered working steps.
+  </footer>
+</main>
+</body>
+</html>
