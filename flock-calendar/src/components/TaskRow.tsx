@@ -1,4 +1,5 @@
 import { TouchableOpacity, Text, View } from 'react-native';
+import { Check } from 'phosphor-react-native';
 import type { RuleKind } from '@/storage/store';
 
 type Props = {
@@ -48,7 +49,7 @@ export default function TaskRow({ title, kind, checked, onToggle }: Props) {
         }`}
       >
         {checked && (
-          <Text className="text-primary-foreground text-[11px] font-bold">✓</Text>
+          <Check weight="fill" size={10} color="#ffffff" />
         )}
       </View>
     </TouchableOpacity>

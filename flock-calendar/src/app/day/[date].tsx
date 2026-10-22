@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ArrowLeft, ArrowRight, Plus } from 'phosphor-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   loadFlock,
@@ -123,7 +118,7 @@ export default function DayListScreen() {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
         >
-          <Text className="text-foreground text-lg">←</Text>
+          <ArrowLeft weight="fill" size={18} color="#1f5f42" />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -131,7 +126,7 @@ export default function DayListScreen() {
           className="w-10 h-10 rounded-full bg-secondary items-center justify-center"
           onPress={addTask}
         >
-          <Text className="text-secondary-foreground text-lg leading-6">＋</Text>
+          <Plus weight="fill" size={18} color="#1f5f42" />
         </TouchableOpacity>
       </View>
 
@@ -247,8 +242,9 @@ export default function DayListScreen() {
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => router.push(`/day/${day}`)}>
-                      <Text className="text-primary text-[11px] font-semibold">
-                        Open →
+                      <Text className="text-primary text-[11px] font-semibold flex-row items-center gap-1">
+                        Open
+                        <ArrowRight weight="fill" size={9} />
                       </Text>
                     </TouchableOpacity>
                   </View>

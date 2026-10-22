@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { saveFlock } from '@/storage/store';
-import { generateFlock, type SetupAnswers } from '@/schedule/build';
 import Field from '@/components/Field';
 import Screen from '@/components/Screen';
+import { generateFlock, type SetupAnswers } from '@/schedule/build';
+import { saveFlock } from '@/storage/store';
+import { useRouter } from 'expo-router';
+import { ArrowLeftIcon } from 'phosphor-react-native';
+import { useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function SetupScreen() {
   const router = useRouter();
@@ -73,7 +74,7 @@ export default function SetupScreen() {
               className="w-10 h-10 rounded-full bg-muted items-center justify-center"
               onPress={() => router.back()}
             >
-              <Text className="text-foreground text-lg">←</Text>
+              <ArrowLeftIcon weight="fill" size={18} color="#1f5f42" />
             </TouchableOpacity>
           ) : (
             <View className="w-10 h-10" />

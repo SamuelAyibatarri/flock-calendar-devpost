@@ -5,18 +5,17 @@ import {
   Stack,
   ThemeProvider,
 } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+// import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 
-SplashScreen.preventAutoHideAsync();
+// SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
-  useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+  // useEffect(() => {
+  //   SplashScreen.hideAsync();
+  // }, []);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

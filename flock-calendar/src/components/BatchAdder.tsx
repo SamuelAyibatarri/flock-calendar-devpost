@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ArrowLeft } from 'phosphor-react-native';
 import { saveFlock, loadFlock, type Batch } from '@/storage/store';
 import { generateFlock, type SetupAnswers } from '@/schedule/build';
 import Field from '@/components/Field';
@@ -80,7 +81,7 @@ export default function BatchAdder({ onDone }: Props) {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={onDone}
         >
-          <Text className="text-foreground text-lg">←</Text>
+          <ArrowLeft weight="fill" size={18} color="#1f5f42" />
         </TouchableOpacity>
         <Text className="text-foreground font-bold">Add batch</Text>
         <View className="w-10 h-10" />

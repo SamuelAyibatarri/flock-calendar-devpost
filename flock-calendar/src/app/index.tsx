@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ArrowRight, Gear, Plus } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
 import {
   loadFlock,
@@ -158,14 +153,14 @@ export default function CalendarScreen() {
             className="w-9 h-9 rounded-full bg-muted items-center justify-center"
             onPress={() => router.push('/setup')}
           >
-            <Text className="text-foreground text-sm">⚙</Text>
+            <Gear weight="fill" size={16} color="#1f5f42" />
           </TouchableOpacity>
           <TouchableOpacity
             accessibilityLabel="Add batch"
             className="w-9 h-9 rounded-full bg-primary items-center justify-center"
             onPress={() => setAddBatchOpen(true)}
           >
-            <Text className="text-primary-foreground text-base leading-5">＋</Text>
+            <Plus weight="fill" size={16} color="#ffffff" />
           </TouchableOpacity>
         </View>
       </View>
@@ -189,8 +184,9 @@ export default function CalendarScreen() {
           <View className="flex-row items-end justify-between mb-2">
             <Text className="text-foreground font-bold text-base">Today</Text>
             <TouchableOpacity onPress={() => router.push(`/day/${today}`)}>
-              <Text className="text-primary text-xs font-semibold">
-                Open day →
+              <Text className="text-primary text-xs font-semibold flex-row items-center gap-1">
+                Open day
+                <ArrowRight weight="fill" size={10} />
               </Text>
             </TouchableOpacity>
           </View>
