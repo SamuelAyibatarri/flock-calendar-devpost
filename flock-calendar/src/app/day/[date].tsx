@@ -9,43 +9,30 @@ import {
   type Batch,
   type Completion,
 } from '@/storage/store';
-import { addDays, isRuleDueOn } from '@/schedule/rules';
+import { isRuleDueOn } from '@/schedule/rules';
 import TaskRow from '@/components/TaskRow';
+
+const NO_BATCHES: Batch[] = [];
+const NO_RULES: Rule[] = [];
+const NO_COMPLETIONS: Completion[] = [];
 
 export default function DayListScreen() {
   const { date: dateParam } = useLocalSearchParams() as { date: string };
   const router = useRouter();
   const [data, setData] = useState<FlockData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [completions, setCompletions] = useState<Completion[]>(NO_COMPLETIONS);
 
   useEffect(() => {
     loadFlock().then((d) => {
       setData(d);
+      setCompletions(d.completions);
       setLoading(false);
     });
   }, []);
 
-  if (loading) {
-    return (
-      <View className="flex-1 bg-card justify-center items-center">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-  if (!data) return null;
-
-  const batches = data.batches;
-  const rules = data.rules;
-  const [completions, setCompletions] = useState<Completion[]>(data.completions);
-
-  // 8-day window: selected date + next 7 days
-  const windowDates: string[] = [];
-  const base = new Date(dateParam + 'T00:00:00Z');
-  for (let i = 0; i < 8; i++) {
-    const d = new Date(base);
-    d.setUTCDate(base.getUTCDate() + i);
-    windowDates.push(d.toISOString().split('T')[0]);
-  }
+  const batches = data?.batches ?? NO_BATCHES;
+  const rules = data?.rules ?? NO_RULES;
 
   const tasksForDate = useCallback(
     (date: string) => {
@@ -66,6 +53,7 @@ export default function DayListScreen() {
   );
 
   const handleCheck = (ruleId: string, date: string) => {
+    if (!data) return;
     if (completions.some((c) => c.ruleId === ruleId && c.date === date)) return;
     const next: Completion = { ruleId, date, doneAt: new Date().toISOString() };
     const updated = [...completions, next];
@@ -73,14 +61,36 @@ export default function DayListScreen() {
     saveFlock({ ...data, completions: updated });
   };
 
+  if (loading) {
+    return (
+      <View className="flex-1 bg-card justify-center items-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!data) {
+    return (
+      <View className="flex-1 bg-card justify-center items-center">
+        <Text className="text-muted-foreground">No flock data yet.</Text>
+      </View>
+    );
+  }
+
+  // 8-day window: selected date + next 7 days
+  const windowDates: string[] = [];
+  const base = new Date(dateParam + 'T00:00:00Z');
+  for (let i = 0; i < 8; i++) {
+    const d = new Date(base);
+    d.setUTCDate(base.getUTCDate() + i);
+    windowDates.push(d.toISOString().split('T')[0]);
+  }
+
   const todayIso = new Date().toISOString().split('T')[0];
 
   return (
     <View className="flex-1 bg-card p-4">
-      <TouchableOpacity
-        className="mb-4"
-        onPress={() => router.push('/')}
-      >
+      <TouchableOpacity className="mb-4" onPress={() => router.push('/')}>
         <Text className="text-primary text-sm">← Back to calendar</Text>
       </TouchableOpacity>
 
@@ -103,7 +113,9 @@ export default function DayListScreen() {
         return (
           <View key={date} className="mb-4">
             <View className="flex-row items-center justify-between mb-1">
-              <Text className={`font-semibold ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+              <Text
+                className={`font-semibold ${isToday ? 'text-primary' : 'text-muted-foreground'}`}
+              >
                 {label}
               </Text>
               {due.length > 0 && (

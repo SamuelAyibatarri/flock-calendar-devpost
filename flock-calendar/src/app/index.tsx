@@ -1,11 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { loadFlock, saveFlock, type FlockData, type Rule, type Batch } from '@/storage/store';
+import { loadFlock, type FlockData, type Rule, type Batch, type Completion } from '@/storage/store';
 import { isRuleDueOn } from '@/schedule/rules';
 import BatchAdder from '@/components/BatchAdder';
 import CustomTaskAdder from '@/components/CustomTaskAdder';
 import SetupScreen from './setup';
+
+const NO_BATCHES: Batch[] = [];
+const NO_RULES: Rule[] = [];
+const NO_COMPLETIONS: Completion[] = [];
 
 export default function CalendarScreen() {
   const router = useRouter();
@@ -22,32 +26,9 @@ export default function CalendarScreen() {
     });
   }, []);
 
-  if (loading) {
-    return (
-      <View className="flex-1 bg-card justify-center items-center">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  const batches = data?.batches ?? [];
-  const rules = data?.rules ?? [];
-  const completions = data?.completions ?? [];
-
-  // First-run gate: nothing configured yet -> show setup directly
-  if (batches.length === 0) {
-    return <SetupScreen />;
-  }
-
-  // Build dates: today + next 42 days
-  const todayIso = new Date().toISOString().split('T')[0];
-  const dates: string[] = [];
-  const today = new Date();
-  for (let i = 0; i <= 42; i++) {
-    const d = new Date(today);
-    d.setUTCDate(today.getUTCDate() + i);
-    dates.push(d.toISOString().split('T')[0]);
-  }
+  const batches = data?.batches ?? NO_BATCHES;
+  const rules = data?.rules ?? NO_RULES;
+  const completions = data?.completions ?? NO_COMPLETIONS;
 
   const tasksForDate = useCallback(
     (date: string) => {
@@ -70,6 +51,29 @@ export default function CalendarScreen() {
   const reload = () => {
     loadFlock().then(setData);
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-card justify-center items-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // First-run gate: nothing configured yet -> show setup directly
+  if (batches.length === 0) {
+    return <SetupScreen />;
+  }
+
+  // Build dates: today + next 42 days
+  const todayIso = new Date().toISOString().split('T')[0];
+  const dates: string[] = [];
+  const today = new Date();
+  for (let i = 0; i <= 42; i++) {
+    const d = new Date(today);
+    d.setUTCDate(today.getUTCDate() + i);
+    dates.push(d.toISOString().split('T')[0]);
+  }
 
   // Render either the calendar view or an adder overlay (single surface at a time)
   if (addBatchOpen) {
