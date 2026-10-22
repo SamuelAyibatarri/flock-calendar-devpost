@@ -1,16 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import {
-  loadFlock,
-  saveFlock,
-  type FlockData,
-  type Rule,
-  type Batch,
-} from '@/storage/store';
+import { loadFlock, saveFlock, type FlockData, type Rule, type Batch } from '@/storage/store';
 import { isRuleDueOn } from '@/schedule/rules';
 import BatchAdder from '@/components/BatchAdder';
 import CustomTaskAdder from '@/components/CustomTaskAdder';
+import SetupScreen from './setup';
 
 export default function CalendarScreen() {
   const router = useRouter();
@@ -27,12 +22,6 @@ export default function CalendarScreen() {
     });
   }, []);
 
-  useEffect(() => {
-    if (!loading && data && data.batches.length === 0) {
-      router.replace('/setup');
-    }
-  }, [loading, data, router]);
-
   if (loading) {
     return (
       <View className="flex-1 bg-card justify-center items-center">
@@ -45,9 +34,9 @@ export default function CalendarScreen() {
   const rules = data?.rules ?? [];
   const completions = data?.completions ?? [];
 
-  // First-run gate: nothing configured yet -> go to setup
+  // First-run gate: nothing configured yet -> show setup directly
   if (batches.length === 0) {
-    return null;
+    return <SetupScreen />;
   }
 
   // Build dates: today + next 42 days
