@@ -1,60 +1,68 @@
-/* :root {
-  --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-    Segoe UI Symbol, Noto Color Emoji;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
-  --font-serif: Georgia, 'Times New Roman', serif;
-} */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 140 40% 98%;
-    --foreground: 100 20% 15%;
-    --card: 140 30% 97%;
-    --card-foreground: 100 20% 15%;
-    --popover: 140 30% 97%;
-    --popover-foreground: 100 20% 15%;
-    --primary: 120 50% 35%;
-    --primary-foreground: 140 30% 97%;
-    --secondary: 60 60% 75%;
-    --secondary-foreground: 30 30% 15%;
-    --muted: 120 20% 85%;
-    --muted-foreground: 100 20% 40%;
-    --accent: 50 80% 60%;
-    --accent-foreground: 30 40% 15%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 120 20% 80%;
-    --input: 120 20% 80%;
-    --ring: 120 50% 35%;
-    --radius: 0.625rem;
+    /* Eco farm palette: warm cream paper, forest green, lemon, pale lime */
+    --background: 48 33% 97%;
+    --foreground: 155 30% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 155 30% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 155 30% 12%;
+
+    --primary: 152 45% 24%;
+    --primary-foreground: 48 40% 98%;
+
+    --secondary: 47 92% 63%;
+    --secondary-foreground: 155 35% 12%;
+
+    --muted: 55 22% 93%;
+    --muted-foreground: 150 10% 40%;
+
+    --accent: 76 62% 89%;
+    --accent-foreground: 152 40% 18%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 55 16% 87%;
+    --input: 55 16% 87%;
+    --ring: 152 45% 24%;
+
+    --radius: 1rem;
   }
 
   .dark {
-    --background: 120 30% 10%;
-    --foreground: 140 30% 90%;
-    --card: 120 30% 12%;
-    --card-foreground: 140 30% 90%;
-    --popover: 120 30% 12%;
-    --popover-foreground: 140 30% 90%;
-    --primary: 120 50% 55%;
-    --primary-foreground: 120 30% 10%;
-    --secondary: 60 60% 50%;
-    --secondary-foreground: 60 30% 10%;
-    --muted: 120 20% 20%;
-    --muted-foreground: 120 20% 60%;
-    --accent: 50 80% 65%;
-    --accent-foreground: 30 40% 10%;
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 120 20% 25%;
-    --input: 120 20% 25%;
-    --ring: 120 50% 55%;
+    --background: 155 24% 8%;
+    --foreground: 55 20% 94%;
+
+    --card: 155 20% 11%;
+    --card-foreground: 55 20% 94%;
+
+    --popover: 155 20% 11%;
+    --popover-foreground: 55 20% 94%;
+
+    --primary: 142 45% 55%;
+    --primary-foreground: 155 30% 8%;
+
+    --secondary: 47 80% 58%;
+    --secondary-foreground: 155 35% 10%;
+
+    --muted: 155 14% 18%;
+    --muted-foreground: 55 10% 65%;
+
+    --accent: 100 30% 24%;
+    --accent-foreground: 76 62% 90%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 155 14% 22%;
+    --input: 155 14% 22%;
+    --ring: 142 45% 55%;
   }
 }

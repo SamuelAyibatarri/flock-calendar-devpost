@@ -1,15 +1,10 @@
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveFlock } from '@/storage/store';
 import { generateFlock, type SetupAnswers } from '@/schedule/build';
+import Field from '@/components/Field';
+import Screen from '@/components/Screen';
 
 export default function SetupScreen() {
   const router = useRouter();
@@ -20,16 +15,34 @@ export default function SetupScreen() {
   const [caretakerSchedule, setCaretakerSchedule] = useState<
     'student' | 'worker'
   >('worker');
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const handleSubmit = async () => {
     const bc = parseInt(birdCount, 10);
     const age = parseInt(birdAgeDays, 10);
     const cp = parseInt(checkupsPerDay, 10);
     const fp = parseInt(feedingsPerDay, 10);
-    if (!bc || bc < 1 || age < 0 || cp < 1 || fp < 1) {
-      Alert.alert('Invalid input', 'Please enter valid numbers for all fields.');
+
+    if (!Number.isFinite(bc) || bc < 1) {
+      setError('Bird count must be at least 1.');
       return;
     }
+    if (!Number.isFinite(age) || age < 0 || age > 3650) {
+      setError('Age must be a number of days between 0 and 3650.');
+      return;
+    }
+    if (!Number.isFinite(cp) || cp < 1 || cp > 6) {
+      setError('Checkups per day must be between 1 and 6.');
+      return;
+    }
+    if (!Number.isFinite(fp) || fp < 1 || fp > 6) {
+      setError('Feedings per day must be between 1 and 6.');
+      return;
+    }
+
+    setError(null);
+    setSaving(true);
     const answers: SetupAnswers = {
       birdType: 'layers',
       caretakerSchedule,
@@ -43,93 +56,154 @@ export default function SetupScreen() {
     router.replace('/');
   };
 
+  const canGoBack = router.canGoBack();
+
   return (
-    <View className="flex-1 bg-primary-foreground p-4">
-      <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
-        <View className="mb-6">
-          <Text className="text-accent-foreground text-2xl font-bold mb-2">
-            Flock setup
+    <Screen>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="px-5 pt-2 pb-4 flex-row items-center justify-between">
+          {canGoBack ? (
+            <TouchableOpacity
+              accessibilityLabel="Back"
+              className="w-10 h-10 rounded-full bg-muted items-center justify-center"
+              onPress={() => router.back()}
+            >
+              <Text className="text-foreground text-lg">←</Text>
+            </TouchableOpacity>
+          ) : (
+            <View className="w-10 h-10" />
+          )}
+          <View className="flex-row items-center gap-2">
+            <View className="w-9 h-9 rounded-2xl bg-primary items-center justify-center">
+              <Text className="text-base">🐔</Text>
+            </View>
+            <Text className="text-foreground font-bold">Flock Calendar</Text>
+          </View>
+          <View className="w-10 h-10" />
+        </View>
+
+        <View className="px-5 mb-5">
+          <Text className="text-foreground text-2xl font-bold tracking-tight">
+            Set up your flock
           </Text>
-          <Text className="text-muted-foreground text-sm">
-            Answer a few questions so we can generate your care calendar.
+          <Text className="text-muted-foreground text-sm mt-1">
+            A few answers and we will build a care calendar around your birds
+            and your day.
           </Text>
         </View>
 
-        <View className="mb-3">
-          <Text className="text-foreground mb-1">Bird count</Text>
-          <TextInput
-            className="border border-border p-2 rounded bg-background"
+        <View className="mx-4 rounded-3xl border border-border bg-card p-4">
+          <Text className="text-foreground text-sm font-semibold mb-4">
+            About the birds
+          </Text>
+
+          <Field
+            label="Bird count"
             value={birdCount}
             onChangeText={setBirdCount}
             keyboardType="numeric"
+            maxLength={5}
+            suffix="birds"
           />
-        </View>
-
-        <View className="mb-3">
-          <Text className="text-foreground mb-1">
-            How long have they lived? (days)
-          </Text>
-          <TextInput
-            className="border border-border p-2 rounded bg-background"
+          <Field
+            label="How long have they lived?"
             value={birdAgeDays}
             onChangeText={setBirdAgeDays}
             keyboardType="numeric"
+            maxLength={4}
+            suffix="days"
+            hint="0 for chicks that just hatched."
           />
         </View>
 
-        <View className="mb-3">
-          <Text className="text-foreground mb-1">Checkups per day</Text>
-          <TextInput
-            className="border border-border p-2 rounded bg-background"
+        <View className="mx-4 mt-3 rounded-3xl border border-border bg-card p-4">
+          <Text className="text-foreground text-sm font-semibold mb-4">
+            Your routine
+          </Text>
+
+          <Field
+            label="Checkups per day"
             value={checkupsPerDay}
             onChangeText={setCheckupsPerDay}
             keyboardType="numeric"
+            maxLength={1}
+            suffix="×"
           />
-        </View>
-
-        <View className="mb-3">
-          <Text className="text-foreground mb-1">Feedings per day</Text>
-          <TextInput
-            className="border border-border p-2 rounded bg-background"
+          <Field
+            label="Feedings per day"
             value={feedingsPerDay}
             onChangeText={setFeedingsPerDay}
             keyboardType="numeric"
+            maxLength={1}
+            suffix="×"
           />
-        </View>
 
-        <View className="mb-6">
-          <Text className="text-foreground mb-1">Your schedule</Text>
+          <Text className="text-foreground text-sm font-medium mb-1.5">
+            Your own schedule
+          </Text>
           <View className="flex-row gap-2">
-            <TouchableOpacity
-              className={`px-3 py-2 rounded border ${
-                caretakerSchedule === 'student'
-                  ? 'bg-secondary text-secondary-foreground'
-                  : 'border-border text-foreground'
-              }`}
-              onPress={() => setCaretakerSchedule('student')}
-            >
-              <Text className="text-sm">Student</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className={`px-3 py-2 rounded border ${
-                caretakerSchedule === 'worker'
-                  ? 'bg-secondary text-secondary-foreground'
-                  : 'border-border text-foreground'
-              }`}
-              onPress={() => setCaretakerSchedule('worker')}
-            >
-              <Text className="text-sm">Worker</Text>
-            </TouchableOpacity>
+            {(['student', 'worker'] as const).map((option) => {
+              const active = caretakerSchedule === option;
+              return (
+                <TouchableOpacity
+                  key={option}
+                  className={`flex-1 rounded-xl border px-3 py-2.5 items-center ${
+                    active
+                      ? 'border-primary bg-primary'
+                      : 'border-border bg-background'
+                  }`}
+                  activeOpacity={0.7}
+                  onPress={() => setCaretakerSchedule(option)}
+                >
+                  <Text
+                    className={`text-sm font-medium capitalize ${
+                      active
+                        ? 'text-primary-foreground'
+                        : 'text-foreground'
+                    }`}
+                  >
+                    {option}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
+          <Text className="text-muted-foreground text-xs mt-2">
+            We fit recurring tasks around the time you actually have.
+          </Text>
         </View>
 
-        <TouchableOpacity
-          className="w-full bg-secondary text-secondary-foreground font-medium py-3 rounded"
-          onPress={handleSubmit}
-        >
-          <Text className="text-center">Generate calendar</Text>
-        </TouchableOpacity>
+        {error && (
+          <View className="mx-4 mt-3 rounded-xl bg-muted px-3 py-2.5 border border-destructive">
+            <Text className="text-destructive text-xs font-medium">{error}</Text>
+          </View>
+        )}
+
+        <View className="px-4 mt-5">
+          <TouchableOpacity
+            className={`rounded-full bg-primary py-3.5 items-center ${
+              saving ? 'opacity-60' : ''
+            }`}
+            activeOpacity={0.8}
+            disabled={saving}
+            onPress={handleSubmit}
+          >
+            <Text className="text-primary-foreground text-sm font-bold">
+              {saving ? 'Generating…' : 'Generate my calendar'}
+            </Text>
+          </TouchableOpacity>
+
+          <Text className="text-muted-foreground text-[11px] text-center mt-3 px-6">
+            Layers only for now · You can add more batches and custom tasks
+            later.
+          </Text>
+        </View>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }

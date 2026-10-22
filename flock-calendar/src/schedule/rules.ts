@@ -1,4 +1,4 @@
-import type { Batch, Rule } from '@/storage/store';
+import type { Rule } from '@/storage/store';
 
 function parseDate(dateStr: string): Date {
   const [y, m, d] = dateStr.split('-').map(Number);

@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { saveFlock, loadFlock, type Batch } from '@/storage/store';
 import { generateFlock, type SetupAnswers } from '@/schedule/build';
+import Field from '@/components/Field';
+import Screen from '@/components/Screen';
 
 type Props = {
   onDone: () => void;
@@ -9,18 +11,29 @@ type Props = {
 
 export default function BatchAdder({ onDone }: Props) {
   const [birdCount, setBirdCount] = useState('10');
-  const [birdAgeDays, setBirdAgeDays] = useState('30');
+  const [birdAgeDays, setBirdAgeDays] = useState('0');
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const handleAdd = async () => {
     const bc = parseInt(birdCount, 10);
     const age = parseInt(birdAgeDays, 10);
-    if (!bc || bc < 1 || age < 0) {
-      Alert.alert('Invalid input', 'Enter valid bird count and age.');
+
+    if (!Number.isFinite(bc) || bc < 1) {
+      setError('Bird count must be at least 1.');
+      return;
+    }
+    if (!Number.isFinite(age) || age < 0 || age > 3650) {
+      setError('Age must be a number of days between 0 and 3650.');
       return;
     }
 
+    setError(null);
+    setSaving(true);
+
     const data = await loadFlock();
-    const nextBatchId = `batch-${data.batches.length + 1}`;
+    const nextNumber = data.batches.length + 1;
+    const nextBatchId = `batch-${nextNumber}`;
 
     const now = new Date();
     const hatchDate = new Date(now);
@@ -29,7 +42,7 @@ export default function BatchAdder({ onDone }: Props) {
 
     const batch: Batch = {
       id: nextBatchId,
-      label: `Batch ${data.batches.length + 1}`,
+      label: `Batch ${nextNumber}`,
       birdCount: bc,
       hatchDate: hatchDateISO,
     };
@@ -60,49 +73,76 @@ export default function BatchAdder({ onDone }: Props) {
   };
 
   return (
-    <View className="flex-1 bg-card p-4">
-      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
-        <View className="mb-4">
-          <Text className="text-primary font-bold text-xl mb-2">Add batch</Text>
-          <Text className="text-muted-foreground text-sm">
-            Add another flock batch at a different age.
+    <Screen>
+      <View className="flex-row items-center justify-between px-5 pt-2 pb-3">
+        <TouchableOpacity
+          accessibilityLabel="Back"
+          className="w-10 h-10 rounded-full bg-muted items-center justify-center"
+          onPress={onDone}
+        >
+          <Text className="text-foreground text-lg">←</Text>
+        </TouchableOpacity>
+        <Text className="text-foreground font-bold">Add batch</Text>
+        <View className="w-10 h-10" />
+      </View>
+
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="px-5 mb-5">
+          <Text className="text-foreground text-2xl font-bold tracking-tight">
+            A new batch
+          </Text>
+          <Text className="text-muted-foreground text-sm mt-1">
+            Give us the count and age and we will schedule its care alongside
+            the rest of the flock.
           </Text>
         </View>
 
-        <View className="mb-3">
-          <Text className="text-foreground mb-1">Bird count</Text>
-          <TextInput
-            className="border border-border p-2 rounded bg-background"
+        <View className="mx-4 rounded-3xl border border-border bg-card p-4">
+          <Field
+            label="Bird count"
             value={birdCount}
             onChangeText={setBirdCount}
             keyboardType="numeric"
+            maxLength={5}
+            suffix="birds"
           />
-        </View>
-
-        <View className="mb-3">
-          <Text className="text-foreground mb-1">How long have they lived? (days)</Text>
-          <TextInput
-            className="border border-border p-2 rounded bg-background"
+          <Field
+            label="How long have they lived?"
             value={birdAgeDays}
             onChangeText={setBirdAgeDays}
             keyboardType="numeric"
+            maxLength={4}
+            suffix="days"
+            hint="0 for chicks that just hatched."
           />
         </View>
 
-        <TouchableOpacity
-          className="w-full bg-secondary text-secondary-foreground font-medium py-3 rounded"
-          onPress={handleAdd}
-        >
-          <Text className="text-center">Add batch</Text>
-        </TouchableOpacity>
+        {error && (
+          <View className="mx-4 mt-3 rounded-xl bg-muted px-3 py-2.5 border border-destructive">
+            <Text className="text-destructive text-xs font-medium">{error}</Text>
+          </View>
+        )}
 
-        <TouchableOpacity
-          className="w-full border border-border rounded py-2 mt-4 text-center"
-          onPress={onDone}
-        >
-          <Text className="text-primary text-sm">Back to calendar</Text>
-        </TouchableOpacity>
+        <View className="px-4 mt-5">
+          <TouchableOpacity
+            className={`rounded-full bg-primary py-3.5 items-center ${
+              saving ? 'opacity-60' : ''
+            }`}
+            activeOpacity={0.8}
+            disabled={saving}
+            onPress={handleAdd}
+          >
+            <Text className="text-primary-foreground text-sm font-bold">
+              {saving ? 'Adding…' : 'Add batch'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
