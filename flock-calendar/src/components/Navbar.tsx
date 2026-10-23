@@ -1,4 +1,4 @@
-import { Tabs, useNavigation } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { House, List, Gear, Plus } from 'phosphor-react-native';
 import { Pressable, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -36,8 +36,7 @@ function TabButton({ route, isFocused, onPress }: TabButtonProps) {
   );
 }
 
-export function CustomTabBar({ state }: any) {
-  const navigation = useNavigation() as any;
+export function CustomTabBar({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
 
   return (
