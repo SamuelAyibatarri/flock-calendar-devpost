@@ -5,17 +5,10 @@ import {
   Stack,
   ThemeProvider,
 } from 'expo-router';
-// import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
-
-// SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-
-  // useEffect(() => {
-  //   SplashScreen.hideAsync();
-  // }, []);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -24,7 +17,12 @@ export default function RootLayout() {
           headerShown: false,
           animation: 'slide_from_right',
         }}
-      />
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="setup" />
+        <Stack.Screen name="day/[date]" />
+        <Stack.Screen name="add-task" />
+      </Stack>
     </ThemeProvider>
   );
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { ArrowRight, Gear, Plus } from 'phosphor-react-native';
+import { ArrowRight } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
 import {
   loadFlock,
@@ -16,7 +16,7 @@ import BatchAdder from '@/components/BatchAdder';
 import MonthCalendar from '@/components/MonthCalendar';
 import Screen from '@/components/Screen';
 import TaskRow from '@/components/TaskRow';
-import SetupScreen from './setup';
+import SetupScreen from '@/app/setup';
 
 const NO_BATCHES: Batch[] = [];
 const NO_RULES: Rule[] = [];
@@ -145,23 +145,6 @@ export default function CalendarScreen() {
               {activeBatchCount}
             </Text>
           </View>
-        </View>
-
-        <View className="flex-row items-center gap-2">
-          <TouchableOpacity
-            accessibilityLabel="Setup"
-            className="w-9 h-9 rounded-full bg-muted items-center justify-center"
-            onPress={() => router.push('/setup')}
-          >
-            <Gear weight="fill" size={16} color="#1f5f42" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            accessibilityLabel="Add batch"
-            className="w-9 h-9 rounded-full bg-primary items-center justify-center"
-            onPress={() => setAddBatchOpen(true)}
-          >
-            <Plus weight="fill" size={16} color="#ffffff" />
-          </TouchableOpacity>
         </View>
       </View>
 
