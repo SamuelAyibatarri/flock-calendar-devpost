@@ -1,21 +1,20 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter, usePathname } from 'expo-router';
 import { House, List, Gear, Plus } from 'phosphor-react-native';
 import { Pressable, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ICON_SIZE = 44;
-const PILL_HEIGHT = 56;
 
 type TabButtonProps = {
-  route: { name: string; key: string; params?: unknown };
-  isFocused: boolean;
+  name: string;
+  isActive: boolean;
   onPress: () => void;
 };
 
-function TabButton({ route, isFocused, onPress }: TabButtonProps) {
+function TabButton({ name, isActive, onPress }: TabButtonProps) {
   let Icon: React.ComponentType<React.ComponentProps<typeof House>> = House;
-  if (route.name === 'history') Icon = List;
-  if (route.name === 'settings') Icon = Gear;
+  if (name === 'history') Icon = List;
+  if (name === 'settings') Icon = Gear;
 
   return (
     <Pressable
@@ -25,7 +24,7 @@ function TabButton({ route, isFocused, onPress }: TabButtonProps) {
           width: ICON_SIZE,
           height: ICON_SIZE,
           borderRadius: ICON_SIZE / 2,
-          backgroundColor: isFocused ? '#3a3a3a' : 'transparent',
+          backgroundColor: isActive ? '#3a3a3a' : 'transparent',
           alignItems: 'center',
           justifyContent: 'center',
         } as ViewStyle,
@@ -36,8 +35,18 @@ function TabButton({ route, isFocused, onPress }: TabButtonProps) {
   );
 }
 
-export function CustomTabBar({ state, navigation }: any) {
+export function CustomTabBar({ state }: any) {
+  const router = useRouter();
+  const pathname = usePathname();
   const insets = useSafeAreaInsets();
+
+  const tabs = [
+    { name: 'index', path: '/' },
+    { name: 'history', path: '/history' },
+    { name: 'settings', path: '/settings' },
+  ];
+
+  const isActive = (path: string) => pathname === path || pathname === `/(tabs)${path}`;
 
   return (
     <View
@@ -67,24 +76,18 @@ export function CustomTabBar({ state, navigation }: any) {
           style={{
             flexDirection: 'row',
             backgroundColor: '#1a1a1a',
-            borderRadius: PILL_HEIGHT / 2,
+            borderRadius: ICON_SIZE / 2 + 4,
             padding: 4,
           }}
         >
-          {state.routes.map((route: any, index: number) => {
-            const isFocused = state.index === index;
-            const onPress = () => {
-              navigation.navigate(route.name, route.params);
-            };
-            return (
-              <TabButton
-                key={route.key}
-                route={route}
-                isFocused={isFocused}
-                onPress={onPress}
-              />
-            );
-          })}
+          {tabs.map((tab) => (
+            <TabButton
+              key={tab.name}
+              name={tab.name}
+              isActive={isActive(tab.path)}
+              onPress={() => router.push(tab.path as any)}
+            />
+          ))}
         </View>
 
         {/* Add button - circular outline, same row as pill */}
@@ -98,7 +101,7 @@ export function CustomTabBar({ state, navigation }: any) {
             alignItems: 'center',
             justifyContent: 'center',
           } as ViewStyle}
-          onPress={() => navigation.navigate('add-task')}
+          onPress={() => router.push('/add-task' as any)}
         >
           <Plus size={22} color="#e6b800" weight="fill" />
         </Pressable>
