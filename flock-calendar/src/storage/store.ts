@@ -37,13 +37,25 @@ export type Completion = {
   doneAt: string; // ISO timestamp
 };
 
+export type Note = {
+  id: string;
+  text: string;
+  createdAt: string; // ISO timestamp
+};
+
 export type FlockData = {
   batches: Batch[];
   rules: Rule[];
   completions: Completion[];
+  notes: Note[];
 };
 
-const emptyData: FlockData = { batches: [], rules: [], completions: [] };
+const emptyData: FlockData = {
+  batches: [],
+  rules: [],
+  completions: [],
+  notes: [],
+};
 
 export async function loadFlock(): Promise<FlockData> {
   try {
@@ -54,6 +66,7 @@ export async function loadFlock(): Promise<FlockData> {
       batches: parsed.batches ?? [],
       rules: parsed.rules ?? [],
       completions: parsed.completions ?? [],
+      notes: parsed.notes ?? [],
     };
   } catch {
     return emptyData;
@@ -62,4 +75,19 @@ export async function loadFlock(): Promise<FlockData> {
 
 export async function saveFlock(data: FlockData): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+export async function addNote(text: string): Promise<void> {
+  const data = await loadFlock();
+  const note: Note = {
+    id: `note-${Date.now()}`,
+    text,
+    createdAt: new Date().toISOString(),
+  };
+  await saveFlock({ ...data, notes: [...data.notes, note] });
+}
+
+export async function deleteNote(id: string): Promise<void> {
+  const data = await loadFlock();
+  await saveFlock({ ...data, notes: data.notes.filter((n) => n.id !== id) });
 }

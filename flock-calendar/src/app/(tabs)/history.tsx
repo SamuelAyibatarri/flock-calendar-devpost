@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { ArrowLeft } from 'phosphor-react-native';
-import { useRouter } from 'expo-router';
-import { loadFlock, type Completion, type Rule } from '@/storage/store';
 import Screen from '@/components/Screen';
 import TaskRow from '@/components/TaskRow';
+import { loadFlock, type Completion, type Rule } from '@/storage/store';
+import { useRouter } from 'expo-router';
+import { ArrowLeftIcon } from 'phosphor-react-native';
+import { useEffect, useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 const NO_COMPLETIONS: Completion[] = [];
 const NO_RULES: Rule[] = [];
@@ -42,7 +42,7 @@ export default function HistoryScreen() {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={() => router.back()}
         >
-          <ArrowLeft weight="fill" size={18} color="#1a1a1a" />
+          <ArrowLeftIcon weight="bold" size={18} color="#1a1a1a" />
         </TouchableOpacity>
         <Text className="text-foreground text-lg font-bold tracking-tight">
           History

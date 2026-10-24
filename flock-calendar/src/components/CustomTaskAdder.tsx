@@ -57,6 +57,7 @@ export default function CustomTaskAdder({
       batches: data.batches,
       rules: [...data.rules, newRule],
       completions: data.completions,
+      notes: data.notes,
     });
     onDone();
   };

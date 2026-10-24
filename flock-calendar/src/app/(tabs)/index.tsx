@@ -1,32 +1,45 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { ArrowRight } from 'phosphor-react-native';
-import { useRouter } from 'expo-router';
-import {
-  loadFlock,
-  saveFlock,
-  type Batch,
-  type Completion,
-  type FlockData,
-  type Rule,
-} from '@/storage/store';
-import { addDays, isRuleDueOn } from '@/schedule/rules';
-import { formatShort, todayIso, weekdayInitial } from '@/lib/date';
+import SetupScreen from '@/app/setup';
 import BatchAdder from '@/components/BatchAdder';
 import MonthCalendar from '@/components/MonthCalendar';
 import Screen from '@/components/Screen';
 import TaskRow from '@/components/TaskRow';
-import SetupScreen from '@/app/setup';
+import { formatShort, todayIso } from '@/lib/date';
+import { isRuleDueOn } from '@/schedule/rules';
+import {
+  loadFlock,
+  saveFlock,
+  addNote,
+  deleteNote,
+  type Batch,
+  type Completion,
+  type FlockData,
+  type Note,
+  type Rule,
+} from '@/storage/store';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 const NO_BATCHES: Batch[] = [];
 const NO_RULES: Rule[] = [];
 const NO_COMPLETIONS: Completion[] = [];
+const NO_NOTES: Note[] = [];
 
 export default function CalendarScreen() {
   const router = useRouter();
   const [data, setData] = useState<FlockData | null>(null);
   const [loading, setLoading] = useState(true);
   const [completions, setCompletions] = useState<Completion[]>(NO_COMPLETIONS);
+  const [notes, setNotes] = useState<Note[]>(NO_NOTES);
+  const [noteText, setNoteText] = useState('');
   const [monthOffset, setMonthOffset] = useState(0);
   const [addBatchOpen, setAddBatchOpen] = useState(false);
 
@@ -34,6 +47,7 @@ export default function CalendarScreen() {
     loadFlock().then((d) => {
       setData(d);
       setCompletions(d.completions);
+      setNotes(d.notes);
       setLoading(false);
     });
   }, []);
@@ -79,7 +93,22 @@ export default function CalendarScreen() {
     loadFlock().then((d) => {
       setData(d);
       setCompletions(d.completions);
+      setNotes(d.notes);
     });
+  };
+
+  const handleAddNote = async () => {
+    if (!noteText.trim()) return;
+    await addNote(noteText.trim());
+    setNoteText('');
+    const d = await loadFlock();
+    setNotes(d.notes);
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    await deleteNote(id);
+    const d = await loadFlock();
+    setNotes(d.notes);
   };
 
   if (loading) {
@@ -120,11 +149,6 @@ export default function CalendarScreen() {
   )
     .toISOString()
     .split('T')[0];
-
-  const upcoming = Array.from({ length: 7 }).map((_, i) => {
-    const date = addDays(today, i + 1);
-    return { date, count: dueFor(date).length };
-  });
 
   const activeBatchCount = `${batches.length} ${
     batches.length === 1 ? 'batch' : 'batches'
@@ -168,9 +192,10 @@ export default function CalendarScreen() {
           <View className="flex-row items-end justify-between mb-2">
             <Text className="text-foreground font-bold text-base">Today</Text>
             <TouchableOpacity onPress={() => router.push(`/day/${today}`)}>
-              <Text className="text-primary text-xs font-semibold flex-row items-center gap-2">
+              <Text 
+                className="text-xs font-semibold text-['#e6b800']"
+                style={{ textDecorationLine: 'underline' }}>
                 Open day
-                <ArrowRight weight="fill" size={10} />
               </Text>
             </TouchableOpacity>
           </View>
@@ -221,31 +246,53 @@ export default function CalendarScreen() {
         </View>
 
         <View className="mx-4 mt-6">
-          <Text className="text-foreground font-bold text-base mb-2">
-            Next 7 days
-          </Text>
-          <View className="flex-row gap-2">
-            {upcoming.map(({ date, count }) => (
-              <TouchableOpacity
-                key={date}
-                className="flex-1 items-center rounded-xl border border-border bg-card py-2"
-                activeOpacity={0.7}
-                onPress={() => router.push(`/day/${date}`)}
-              >
-                <Text className="text-[10px] text-muted-foreground font-medium">
-                  {weekdayInitial(date)}
-                </Text>
-                <Text className="text-foreground text-sm font-semibold mt-0.5">
-                  {date.slice(8, 10)}
-                </Text>
-                <View className="h-1.5 mt-1 flex-row items-center justify-center">
-                  {count > 0 && (
-                    <View className="w-1 h-1 rounded-full bg-primary" />
-                  )}
-                </View>
-              </TouchableOpacity>
-            ))}
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-foreground font-bold text-base">Notes</Text>
+            <TextInput
+              className="flex-1 border border-border p-2 rounded bg-background text-foreground"
+              value={noteText}
+              onChangeText={setNoteText}
+              placeholder="Write a note…"
+              maxLength={200}
+            />
+            <TouchableOpacity
+              className="bg-primary px-3 py-1.5 rounded"
+              onPress={handleAddNote}
+              disabled={!noteText.trim()}
+            >
+              <Text className="text-primary-foreground text-xs font-bold">Add</Text>
+            </TouchableOpacity>
           </View>
+          {notes.length === 0 && (
+            <View className="rounded-2xl border border-dashed border-border bg-card px-4 py-5 items-center mt-2">
+              <Text className="text-muted-foreground text-sm text-center">
+                No notes yet. Add one above.
+              </Text>
+            </View>
+          )}
+          {notes.map((note) => (
+            <View
+              key={note.id}
+              className="flex-row items-center justify-between rounded-xl border border-border bg-card px-3 py-2 mt-2"
+            >
+              <View className="flex-1">
+                <Text className="text-foreground text-sm">{note.text}</Text>
+                <Text className="text-muted-foreground text-[10px] mt-0.5">
+                  {new Date(note.createdAt).toLocaleDateString(undefined, {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </Text>
+              </View>
+              <TouchableOpacity
+                className="p-1"
+                onPress={() => handleDeleteNote(note.id)}
+              >
+                <Text className="text-destructive text-xs font-bold">×</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
         </View>
       </ScrollView>
     </Screen>

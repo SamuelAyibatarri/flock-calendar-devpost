@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { ArrowLeft, ArrowRight, Plus } from 'phosphor-react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import Screen from '@/components/Screen';
+import TaskRow from '@/components/TaskRow';
+import { formatLong, formatShort, todayIso } from '@/lib/date';
+import { addDays, isRuleDueOn } from '@/schedule/rules';
 import {
   loadFlock,
   saveFlock,
@@ -10,10 +10,10 @@ import {
   type FlockData,
   type Rule,
 } from '@/storage/store';
-import { addDays, isRuleDueOn } from '@/schedule/rules';
-import { formatLong, formatShort, todayIso } from '@/lib/date';
-import Screen from '@/components/Screen';
-import TaskRow from '@/components/TaskRow';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ArrowLeftIcon, ArrowRightIcon, PlusIcon } from 'phosphor-react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 const NO_BATCHES: Batch[] = [];
 const NO_RULES: Rule[] = [];
@@ -118,7 +118,7 @@ export default function DayListScreen() {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
         >
-          <ArrowLeft weight="fill" size={18} color="#1a1a1a" />
+          <ArrowLeftIcon weight="bold" size={18} color="#1a1a1a" />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -126,7 +126,7 @@ export default function DayListScreen() {
           className="w-10 h-10 rounded-full bg-secondary items-center justify-center"
           onPress={addTask}
         >
-          <Plus weight="fill" size={18} color="#1a1a1a" />
+          <PlusIcon weight="bold" size={18} color="#1a1a1a" />
         </TouchableOpacity>
       </View>
 
@@ -244,7 +244,7 @@ export default function DayListScreen() {
                     <TouchableOpacity onPress={() => router.push(`/day/${day}`)}>
                       <Text className="text-primary text-[11px] font-semibold flex-row items-center gap-2">
                         Open
-                        <ArrowRight weight="fill" size={9} />
+                        <ArrowRightIcon weight="bold" size={9} />
                       </Text>
                     </TouchableOpacity>
                   </View>

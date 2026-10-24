@@ -1,5 +1,5 @@
-import { Tabs, useRouter, usePathname } from 'expo-router';
-import { House, List, Gear, Plus } from 'phosphor-react-native';
+import { Tabs, usePathname, useRouter } from 'expo-router';
+import { GearIcon, HouseIcon, ListIcon, PlusIcon } from 'phosphor-react-native';
 import { Pressable, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,9 +12,9 @@ type TabButtonProps = {
 };
 
 function TabButton({ name, isActive, onPress }: TabButtonProps) {
-  let Icon: React.ComponentType<React.ComponentProps<typeof House>> = House;
-  if (name === 'history') Icon = List;
-  if (name === 'settings') Icon = Gear;
+  let Icon: React.ComponentType<React.ComponentProps<typeof HouseIcon>> = HouseIcon;
+  if (name === 'history') Icon = ListIcon;
+  if (name === 'settings') Icon = GearIcon;
 
   return (
     <Pressable
@@ -98,12 +98,13 @@ export function CustomTabBar({ state }: any) {
             borderRadius: ICON_SIZE / 2,
             borderWidth: 1.5,
             borderColor: '#e6b800',
+            backgroundColor: '#e6b800',
             alignItems: 'center',
             justifyContent: 'center',
           } as ViewStyle}
           onPress={() => router.push('/add-task' as any)}
         >
-          <Plus size={18} color="#e6b800" weight="fill" />
+          <PlusIcon size={18} color="#1a1a1a" weight="bold" />
         </Pressable>
       </View>
     </View>

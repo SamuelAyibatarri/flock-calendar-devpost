@@ -1,8 +1,8 @@
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { ArrowLeft } from 'phosphor-react-native';
-import { useRouter } from 'expo-router';
 import Screen from '@/components/Screen';
 import { useTheme } from '@/context/ThemeContext';
+import { useRouter } from 'expo-router';
+import { ArrowLeftIcon } from 'phosphor-react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function SettingsScreen() {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={() => router.back()}
         >
-          <ArrowLeft weight="fill" size={18} color="#1a1a1a" />
+          <ArrowLeftIcon weight="bold" size={18} color="#1a1a1a" />
         </TouchableOpacity>
         <Text className="text-foreground text-lg font-bold tracking-tight">
           Settings

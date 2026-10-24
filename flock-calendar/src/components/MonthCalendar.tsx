@@ -1,5 +1,6 @@
-import { View, Text, TouchableOpacity } from 'react-native';
 import { dateParts, formatMonth, isoDate, todayIso } from '@/lib/date';
+import { CaretLeftIcon, CaretRightIcon } from 'phosphor-react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
   /** Any ISO date inside the month to render. */
@@ -44,7 +45,7 @@ export default function MonthCalendar({
           className="w-9 h-9 rounded-full bg-muted items-center justify-center"
           onPress={onPrevMonth}
         >
-          <Text className="text-foreground text-base">‹</Text>
+          <Text className="text-foreground text-base"><CaretLeftIcon size={16}/></Text>
         </TouchableOpacity>
 
         <Text className="text-foreground font-bold text-base">
@@ -56,7 +57,7 @@ export default function MonthCalendar({
           className="w-9 h-9 rounded-full bg-muted items-center justify-center"
           onPress={onNextMonth}
         >
-          <Text className="text-foreground text-base">›</Text>
+          <Text className="text-foreground text-base">< CaretRightIcon size={16} /></Text>
         </TouchableOpacity>
       </View>
 

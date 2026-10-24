@@ -68,6 +68,7 @@ export default function BatchAdder({ onDone }: Props) {
       batches: [...data.batches, batch],
       rules: [...data.rules, ...newRules],
       completions: data.completions,
+      notes: data.notes,
     };
     await saveFlock(updated);
     onDone();

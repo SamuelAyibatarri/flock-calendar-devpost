@@ -53,7 +53,7 @@ export default function SetupScreen() {
       feedingsPerDay: fp,
     };
     const { batches, rules } = generateFlock(answers);
-    await saveFlock({ batches, rules, completions: [] });
+    await saveFlock({ batches, rules, completions: [], notes: [] });
     router.replace('/');
   };
 

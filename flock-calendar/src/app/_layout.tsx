@@ -5,27 +5,32 @@ import {
   Stack,
   ThemeProvider as RouterThemeProvider,
 } from 'expo-router';
-import { useColorScheme } from 'react-native';
-import { ThemeProvider } from '@/context/ThemeContext';
+import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function ThemeStack() {
+  const { theme } = useTheme();
 
   return (
+    <RouterThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: 'slide_from_right',
+        }}
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="setup" />
+        <Stack.Screen name="day/[date]" />
+        <Stack.Screen name="add-task" />
+      </Stack>
+    </RouterThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <ThemeProvider>
-      <RouterThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'slide_from_right',
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="setup" />
-          <Stack.Screen name="day/[date]" />
-          <Stack.Screen name="add-task" />
-        </Stack>
-      </RouterThemeProvider>
+      <ThemeStack />
     </ThemeProvider>
   );
 }
