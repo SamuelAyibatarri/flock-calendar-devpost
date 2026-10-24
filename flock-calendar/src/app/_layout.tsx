@@ -5,14 +5,15 @@ import {
   Stack,
   ThemeProvider as RouterThemeProvider,
 } from 'expo-router';
-import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import { useColorScheme } from 'react-native';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 export default function RootLayout() {
-  const { theme } = useTheme();
+  const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider>
-      <RouterThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+      <RouterThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack
           screenOptions={{
             headerShown: false,
