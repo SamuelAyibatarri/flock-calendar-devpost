@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { Appearance, ColorSchemeName } from 'react-native';
+import { useColorScheme, ColorSchemeName } from 'react-native';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -13,8 +13,10 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>('system');
+  const systemScheme = useColorScheme();
 
-  const theme: ColorSchemeName = mode === 'system' ? Appearance.getColorScheme() ?? 'light' : mode;
+  const theme: ColorSchemeName =
+    mode === 'system' ? (systemScheme ?? 'light') : mode;
 
   const setThemeMode = useCallback((newMode: ThemeMode) => {
     setMode(newMode);

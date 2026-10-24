@@ -40,6 +40,7 @@ export type Completion = {
 export type Note = {
   id: string;
   text: string;
+  date: string; // ISO date the note belongs to
   createdAt: string; // ISO timestamp
 };
 
@@ -77,11 +78,12 @@ export async function saveFlock(data: FlockData): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-export async function addNote(text: string): Promise<void> {
+export async function addNote(text: string, date: string): Promise<void> {
   const data = await loadFlock();
   const note: Note = {
     id: `note-${Date.now()}`,
     text,
+    date,
     createdAt: new Date().toISOString(),
   };
   await saveFlock({ ...data, notes: [...data.notes, note] });
@@ -90,4 +92,12 @@ export async function addNote(text: string): Promise<void> {
 export async function deleteNote(id: string): Promise<void> {
   const data = await loadFlock();
   await saveFlock({ ...data, notes: data.notes.filter((n) => n.id !== id) });
+}
+
+export function getNotesForDate(notes: Note[], date: string): Note[] {
+  return notes.filter((n) => n.date === date).sort((a, b) => {
+    if (a.createdAt < b.createdAt) return 1;
+    if (a.createdAt > b.createdAt) return -1;
+    return 0;
+  });
 }

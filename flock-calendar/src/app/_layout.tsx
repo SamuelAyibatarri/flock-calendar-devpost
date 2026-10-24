@@ -11,7 +11,7 @@ function ThemeStack() {
   const { theme } = useTheme();
 
   return (
-    <RouterThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+    <RouterThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme} key={theme}>
       <Stack
         screenOptions={{
           headerShown: false,
