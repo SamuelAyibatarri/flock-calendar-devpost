@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { ArrowRight } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -86,7 +86,7 @@ export default function CalendarScreen() {
     return (
       <Screen>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1f5f42" />
+          <ActivityIndicator size="large" color="#1a1a1a" />
         </View>
       </Screen>
     );
@@ -134,9 +134,10 @@ export default function CalendarScreen() {
     <Screen>
       <View className="flex-row items-center justify-between px-5 pt-2 pb-3">
         <View className="flex-row items-center gap-3">
-          <View className="w-11 h-11 rounded-2xl bg-primary items-center justify-center">
-            <Text className="text-xl">🐔</Text>
-          </View>
+          <Image
+            source={require('@/assets/images/icon.png')}
+            className="w-11 h-11 rounded-2xl"
+          />
           <View>
             <Text className="text-foreground text-lg font-bold tracking-tight">
               Flock Calendar
@@ -150,7 +151,7 @@ export default function CalendarScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
       >
         <View className="mx-4 rounded-3xl border border-border bg-card p-4">
@@ -167,7 +168,7 @@ export default function CalendarScreen() {
           <View className="flex-row items-end justify-between mb-2">
             <Text className="text-foreground font-bold text-base">Today</Text>
             <TouchableOpacity onPress={() => router.push(`/day/${today}`)}>
-              <Text className="text-primary text-xs font-semibold flex-row items-center gap-1">
+              <Text className="text-primary text-xs font-semibold flex-row items-center gap-2">
                 Open day
                 <ArrowRight weight="fill" size={10} />
               </Text>

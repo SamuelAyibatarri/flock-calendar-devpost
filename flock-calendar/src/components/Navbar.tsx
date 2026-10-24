@@ -30,7 +30,7 @@ function TabButton({ name, isActive, onPress }: TabButtonProps) {
         } as ViewStyle,
       ]}
     >
-      <Icon size={22} color="#ffffff" weight="fill" />
+      <Icon size={20} color="#ffffff" weight="fill" />
     </Pressable>
   );
 }
@@ -41,9 +41,9 @@ export function CustomTabBar({ state }: any) {
   const insets = useSafeAreaInsets();
 
   const tabs = [
-    { name: 'index', path: '/' },
-    { name: 'history', path: '/history' },
-    { name: 'settings', path: '/settings' },
+    { name: 'index', path: '/', label: 'Home' },
+    { name: 'history', path: '/history', label: 'History' },
+    { name: 'settings', path: '/settings', label: 'Settings' },
   ];
 
   const isActive = (path: string) => pathname === path || pathname === `/(tabs)${path}`;
@@ -67,7 +67,7 @@ export function CustomTabBar({ state }: any) {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 12,
+          gap: 10,
           pointerEvents: 'box-none',
         }}
       >
@@ -76,8 +76,8 @@ export function CustomTabBar({ state }: any) {
           style={{
             flexDirection: 'row',
             backgroundColor: '#1a1a1a',
-            borderRadius: ICON_SIZE / 2 + 4,
-            padding: 4,
+            borderRadius: ICON_SIZE / 2 + 6,
+            padding: 5,
           }}
         >
           {tabs.map((tab) => (
@@ -96,14 +96,14 @@ export function CustomTabBar({ state }: any) {
             width: ICON_SIZE,
             height: ICON_SIZE,
             borderRadius: ICON_SIZE / 2,
-            borderWidth: 2,
+            borderWidth: 1.5,
             borderColor: '#e6b800',
             alignItems: 'center',
             justifyContent: 'center',
           } as ViewStyle}
           onPress={() => router.push('/add-task' as any)}
         >
-          <Plus size={22} color="#e6b800" weight="fill" />
+          <Plus size={18} color="#e6b800" weight="fill" />
         </Pressable>
       </View>
     </View>

@@ -29,7 +29,7 @@ export default function TaskRow({ title, kind, checked, onToggle }: Props) {
       activeOpacity={0.7}
       onPress={onToggle}
     >
-      <View className="w-9 h-9 rounded-xl bg-accent items-center justify-center">
+      <View className="w-9 h-9 rounded-xl items-center justify-center">
         <Text className="text-base">{KIND_ICON[kind]}</Text>
       </View>
 
@@ -44,12 +44,12 @@ export default function TaskRow({ title, kind, checked, onToggle }: Props) {
       </Text>
 
       <View
-        className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-          checked ? 'bg-primary border-primary' : 'border-border bg-card'
+        className={`w-7 h-7 rounded-full items-center justify-center ${
+          checked ? 'bg-accent border-accent' : 'border-border bg-card'
         }`}
       >
         {checked && (
-          <Check weight="fill" size={10} color="#ffffff" />
+          <Check weight="fill" size={12} color="#ffffff" />
         )}
       </View>
     </TouchableOpacity>

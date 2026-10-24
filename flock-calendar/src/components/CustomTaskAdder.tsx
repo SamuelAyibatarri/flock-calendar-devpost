@@ -69,7 +69,7 @@ export default function CustomTaskAdder({
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={onDone}
         >
-          <ArrowLeft weight="fill" size={18} color="#1f5f42" />
+          <ArrowLeft weight="fill" size={18} color="#1a1a1a" />
         </TouchableOpacity>
         <Text className="text-foreground font-bold">Add task</Text>
         <View className="w-10 h-10" />

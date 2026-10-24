@@ -5,7 +5,7 @@ import { saveFlock } from '@/storage/store';
 import { useRouter } from 'expo-router';
 import { ArrowLeftIcon } from 'phosphor-react-native';
 import { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function SetupScreen() {
   const router = useRouter();
@@ -74,15 +74,16 @@ export default function SetupScreen() {
               className="w-10 h-10 rounded-full bg-muted items-center justify-center"
               onPress={() => router.back()}
             >
-              <ArrowLeftIcon weight="fill" size={18} color="#1f5f42" />
+              <ArrowLeftIcon weight="fill" size={18} color="#1a1a1a" />
             </TouchableOpacity>
           ) : (
             <View className="w-10 h-10" />
           )}
           <View className="flex-row items-center gap-2">
-            <View className="w-9 h-9 rounded-2xl bg-primary items-center justify-center">
-              <Text className="text-base">🐔</Text>
-            </View>
+            <Image
+              source={require('@/assets/images/icon.png')}
+              className="w-9 h-9 rounded-2xl"
+            />
             <Text className="text-foreground font-bold">Flock Calendar</Text>
           </View>
           <View className="w-10 h-10" />

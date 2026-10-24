@@ -75,7 +75,7 @@ export default function DayListScreen() {
     return (
       <Screen>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1f5f42" />
+          <ActivityIndicator size="large" color="#e6b800" />
         </View>
       </Screen>
     );
@@ -118,7 +118,7 @@ export default function DayListScreen() {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
         >
-          <ArrowLeft weight="fill" size={18} color="#1f5f42" />
+          <ArrowLeft weight="fill" size={18} color="#1a1a1a" />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -126,7 +126,7 @@ export default function DayListScreen() {
           className="w-10 h-10 rounded-full bg-secondary items-center justify-center"
           onPress={addTask}
         >
-          <Plus weight="fill" size={18} color="#1f5f42" />
+          <Plus weight="fill" size={18} color="#1a1a1a" />
         </TouchableOpacity>
       </View>
 
@@ -242,7 +242,7 @@ export default function DayListScreen() {
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => router.push(`/day/${day}`)}>
-                      <Text className="text-primary text-[11px] font-semibold flex-row items-center gap-1">
+                      <Text className="text-primary text-[11px] font-semibold flex-row items-center gap-2">
                         Open
                         <ArrowRight weight="fill" size={9} />
                       </Text>

@@ -42,7 +42,7 @@ export default function HistoryScreen() {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={() => router.back()}
         >
-          <ArrowLeft weight="fill" size={18} color="#1f5f42" />
+          <ArrowLeft weight="fill" size={18} color="#1a1a1a" />
         </TouchableOpacity>
         <Text className="text-foreground text-lg font-bold tracking-tight">
           History
@@ -56,7 +56,7 @@ export default function HistoryScreen() {
         showsVerticalScrollIndicator={false}
       >
         {completions.length === 0 ? (
-          <View className="rounded-2xl border border-dashed border-border bg-card px-4 py-8 items-center">
+          <View className="mx-4 rounded-2xl border border-dashed border-border bg-card px-4 py-8 items-center">
             <Text className="text-3xl mb-2">📜</Text>
             <Text className="text-foreground text-sm font-semibold">
               No history yet
@@ -66,16 +66,17 @@ export default function HistoryScreen() {
             </Text>
           </View>
         ) : (
-          completions.map((completion) => {
+          completions.map((completion, i) => {
             const rule = rules.find((r) => r.id === completion.ruleId);
             return (
-              <TaskRow
-                key={completion.ruleId + completion.date}
-                title={rule?.title ?? 'Task'}
-                kind={rule?.kind ?? 'custom'}
-                checked
-                onToggle={() => {}}
-              />
+              <View key={completion.ruleId + completion.date} className="mx-4 mb-3">
+                <TaskRow
+                  title={rule?.title ?? 'Task'}
+                  kind={rule?.kind ?? 'custom'}
+                  checked
+                  onToggle={() => {}}
+                />
+              </View>
             );
           })
         )}

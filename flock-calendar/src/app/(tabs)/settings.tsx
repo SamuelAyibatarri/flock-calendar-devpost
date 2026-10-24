@@ -1,12 +1,12 @@
-import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { ArrowLeft } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
 import Screen from '@/components/Screen';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
+  const { mode, setMode } = useTheme();
 
   return (
     <Screen>
@@ -16,7 +16,7 @@ export default function SettingsScreen() {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={() => router.back()}
         >
-          <ArrowLeft weight="fill" size={18} color="#1f5f42" />
+          <ArrowLeft weight="fill" size={18} color="#1a1a1a" />
         </TouchableOpacity>
         <Text className="text-foreground text-lg font-bold tracking-tight">
           Settings
@@ -38,15 +38,15 @@ export default function SettingsScreen() {
             <Text className="text-foreground text-sm">Dark mode</Text>
             <TouchableOpacity
               className={`w-12 h-6 rounded-full ${
-                darkMode ? 'bg-primary' : 'bg-muted'
+                mode === 'dark' ? 'bg-primary' : 'bg-muted'
               }`}
               activeOpacity={0.7}
-              onPress={() => setDarkMode(!darkMode)}
+              onPress={() => setMode(mode === 'dark' ? 'light' : 'dark')}
             >
               <View
                 className={`w-4 h-4 rounded-full ${
-                  darkMode ? 'bg-primary-foreground' : 'bg-muted-foreground'
-                } absolute ${darkMode ? 'right-1' : 'left-1'} top-1`}
+                  mode === 'dark' ? 'bg-primary-foreground' : 'bg-muted-foreground'
+                } absolute ${mode === 'dark' ? 'right-1' : 'left-1'} top-1`}
               />
             </TouchableOpacity>
           </View>
