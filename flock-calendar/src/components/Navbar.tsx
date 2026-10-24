@@ -2,6 +2,7 @@ import { Tabs, usePathname, useRouter } from 'expo-router';
 import { GearIcon, HouseIcon, ListIcon, PlusIcon } from 'phosphor-react-native';
 import { Pressable, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { todayIso } from '@/lib/date';
 
 const ICON_SIZE = 44;
 
@@ -102,7 +103,7 @@ export function CustomTabBar({ state }: any) {
             alignItems: 'center',
             justifyContent: 'center',
           } as ViewStyle}
-          onPress={() => router.push('/add-task' as any)}
+          onPress={() => router.push(`/day/${todayIso()}` as any)}
         >
           <PlusIcon size={18} color="#1a1a1a" weight="bold" />
         </Pressable>

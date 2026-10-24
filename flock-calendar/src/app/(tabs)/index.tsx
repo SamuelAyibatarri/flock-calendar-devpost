@@ -8,25 +8,36 @@ import { isRuleDueOn } from '@/schedule/rules';
 import {
   loadFlock,
   saveFlock,
+  addNote,
+  deleteNote,
+  updateNote,
+  getNotesForDate,
   type Batch,
   type Completion,
   type FlockData,
+  type Note,
   type Rule,
 } from '@/storage/store';
 import { useRouter } from 'expo-router';
+import { Alert } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { TrashIcon } from 'phosphor-react-native';
 
 const NO_BATCHES: Batch[] = [];
 const NO_RULES: Rule[] = [];
 const NO_COMPLETIONS: Completion[] = [];
+const NO_NOTES: Note[] = [];
 
 export default function CalendarScreen() {
   const router = useRouter();
@@ -35,11 +46,15 @@ export default function CalendarScreen() {
   const [completions, setCompletions] = useState<Completion[]>(NO_COMPLETIONS);
   const [monthOffset, setMonthOffset] = useState(0);
   const [addBatchOpen, setAddBatchOpen] = useState(false);
+  const [notes, setNotes] = useState<Note[]>(NO_NOTES);
+  const [noteText, setNoteText] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadFlock().then((d) => {
       setData(d);
       setCompletions(d.completions);
+      setNotes(getNotesForDate(d.notes, todayIso()));
       setLoading(false);
     });
   }, []);
@@ -85,7 +100,46 @@ export default function CalendarScreen() {
     loadFlock().then((d) => {
       setData(d);
       setCompletions(d.completions);
+      setNotes(getNotesForDate(d.notes, todayIso()));
     });
+  };
+
+  const handleAddNote = async () => {
+    if (!noteText.trim()) return;
+    await addNote(noteText.trim(), todayIso());
+    setNoteText('');
+    setEditingNoteId(null);
+    const d = await loadFlock();
+    setNotes(getNotesForDate(d.notes, todayIso()));
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    await Alert.alert(
+      'Delete note',
+      'Are you sure you want to delete this note?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: async () => {
+          await deleteNote(id);
+          const d = await loadFlock();
+          setNotes(getNotesForDate(d.notes, todayIso()));
+        } },
+      ],
+    );
+  };
+
+  const handleEditNote = (id: string, currentText: string) => {
+    setEditingNoteId(id);
+    setNoteText(currentText);
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (!noteText.trim()) return;
+    await updateNote(id, noteText.trim(), todayIso());
+    setNoteText('');
+    setEditingNoteId(null);
+    const d = await loadFlock();
+    setNotes(getNotesForDate(d.notes, todayIso()));
   };
 
   if (loading) {
@@ -150,79 +204,146 @@ export default function CalendarScreen() {
         </View>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: 110 }}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
       >
-        <View className="mx-4 rounded-3xl border border-border bg-card p-4">
-          <MonthCalendar
-            monthAnchor={monthAnchor}
-            dueCount={(date) => dueFor(date).length}
-            onPrevMonth={() => setMonthOffset((o) => o - 1)}
-            onNextMonth={() => setMonthOffset((o) => o + 1)}
-            onSelectDate={(date) => router.push(`/day/${date}`)}
-          />
-        </View>
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 110 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="mx-4 rounded-3xl border border-border bg-card p-4">
+            <MonthCalendar
+              monthAnchor={monthAnchor}
+              dueCount={(date) => dueFor(date).length}
+              onPrevMonth={() => setMonthOffset((o) => o - 1)}
+              onNextMonth={() => setMonthOffset((o) => o + 1)}
+              onSelectDate={(date) => router.push(`/day/${date}`)}
+            />
+          </View>
 
-        <View className="mx-4 mt-6">
-          <View className="flex-row items-end justify-between mb-2">
-            <Text className="text-foreground font-bold text-base">Today</Text>
-            <TouchableOpacity onPress={() => router.push(`/day/${today}`)}>
-              <Text
-                className="text-xs font-semibold text-['#e6b800']"
-                style={{ textDecorationLine: 'underline' }}
-              >
-                Open day
+          <View className="mx-4 mt-6">
+            <View className="flex-row items-end justify-between mb-2">
+              <Text className="text-foreground font-bold text-base">Today</Text>
+              <TouchableOpacity onPress={() => router.push(`/day/${today}`)}>
+                <Text
+                  className="text-xs font-semibold text-['#e6b800']"
+                  style={{ textDecorationLine: 'underline' }}
+                >
+                  Open day
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text className="text-muted-foreground text-xs mb-3">
+              {formatShort(today)}
+              {pendingToday.length > 0
+                ? ` · ${pendingToday.length} left`
+                : ' · all caught up'}
+            </Text>
+
+            {pendingToday.map((rule) => (
+              <TaskRow
+                key={rule.id}
+                title={rule.title}
+                kind={rule.kind}
+                checked={false}
+                onToggle={() => toggle(rule.id, today)}
+              />
+            ))}
+
+            {pendingToday.length === 0 && (
+              <View className="rounded-2xl border border-dashed border-border bg-card px-4 py-5">
+                <Text className="text-foreground text-sm font-medium">
+                  Nothing left for today 🎉
+                </Text>
+                <Text className="text-muted-foreground text-xs mt-1">
+                  Tap a date on the calendar to see what is coming.
+                </Text>
+              </View>
+            )}
+
+            {doneToday.length > 0 && (
+              <View className="mt-3">
+                <Text className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wide mb-2">
+                  Done today · {doneToday.length}
+                </Text>
+                {doneToday.map((rule) => (
+                  <TaskRow
+                    key={rule.id}
+                    title={rule.title}
+                    kind={rule.kind}
+                    checked
+                    onToggle={() => toggle(rule.id, today)}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Today's notes section */}
+          <View className="mx-4 mt-6">
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-foreground font-bold text-base">Notes for today</Text>
+            </View>
+            <TextInput
+              className="border border-border rounded-lg p-3 bg-background text-foreground min-h-[80px]"
+              value={noteText}
+              onChangeText={setNoteText}
+              placeholder={editingNoteId ? 'Edit note…' : 'Add a note for today…'}
+              multiline
+              numberOfLines={4}
+            />
+            <TouchableOpacity
+              className={`bg-primary mt-2 px-4 py-2 rounded-lg ${
+                !noteText.trim() ? 'opacity-50' : ''
+              }`}
+              activeOpacity={0.7}
+              disabled={!noteText.trim()}
+              onPress={() => editingNoteId ? handleSaveEdit(editingNoteId) : handleAddNote()}
+            >
+              <Text className="text-primary-foreground text-sm font-semibold">
+                {editingNoteId ? 'Save note' : 'Add note'}
               </Text>
             </TouchableOpacity>
+            {notes.length === 0 ? (
+              <View className="rounded-xl border border-dashed border-border bg-card px-4 py-4 mt-2 items-center">
+                <Text className="text-muted-foreground text-sm text-center">
+                  No notes for today yet.
+                </Text>
+              </View>
+            ) : (
+              notes.map((note) => (
+                <View
+                  key={note.id}
+                  className="flex-row items-center justify-between rounded-xl border border-border bg-card px-3 py-2 mt-2"
+                >
+                  <TouchableOpacity
+                    onPress={() => handleEditNote(note.id, note.text)}
+                    className="flex-1"
+                  >
+                    <Text className="text-foreground text-sm">{note.text}</Text>
+                    <Text className="text-muted-foreground text-[10px] mt-0.5">
+                      {new Date(note.createdAt).toLocaleDateString(undefined, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className="p-1"
+                    onPress={() => handleDeleteNote(note.id)}
+                  >
+                    <TrashIcon size={16} color="#d41616" weight="fill" />
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
           </View>
-          <Text className="text-muted-foreground text-xs mb-3">
-            {formatShort(today)}
-            {pendingToday.length > 0
-              ? ` · ${pendingToday.length} left`
-              : ' · all caught up'}
-          </Text>
-
-          {pendingToday.map((rule) => (
-            <TaskRow
-              key={rule.id}
-              title={rule.title}
-              kind={rule.kind}
-              checked={false}
-              onToggle={() => toggle(rule.id, today)}
-            />
-          ))}
-
-          {pendingToday.length === 0 && (
-            <View className="rounded-2xl border border-dashed border-border bg-card px-4 py-5">
-              <Text className="text-foreground text-sm font-medium">
-                Nothing left for today 🎉
-              </Text>
-              <Text className="text-muted-foreground text-xs mt-1">
-                Tap a date on the calendar to see what is coming.
-              </Text>
-            </View>
-          )}
-
-          {doneToday.length > 0 && (
-            <View className="mt-3">
-              <Text className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wide mb-2">
-                Done today · {doneToday.length}
-              </Text>
-              {doneToday.map((rule) => (
-                <TaskRow
-                  key={rule.id}
-                  title={rule.title}
-                  kind={rule.kind}
-                  checked
-                  onToggle={() => toggle(rule.id, today)}
-                />
-              ))}
-            </View>
-          )}
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }

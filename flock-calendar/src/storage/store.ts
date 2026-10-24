@@ -94,6 +94,14 @@ export async function deleteNote(id: string): Promise<void> {
   await saveFlock({ ...data, notes: data.notes.filter((n) => n.id !== id) });
 }
 
+export async function updateNote(id: string, text: string, date: string): Promise<void> {
+  const data = await loadFlock();
+  await saveFlock({
+    ...data,
+    notes: data.notes.map((n) => (n.id === id ? { ...n, text, date } : n)),
+  });
+}
+
 export function getNotesForDate(notes: Note[], date: string): Note[] {
   return notes.filter((n) => n.date === date).sort((a, b) => {
     if (a.createdAt < b.createdAt) return 1;

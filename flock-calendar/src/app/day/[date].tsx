@@ -7,6 +7,7 @@ import {
   saveFlock,
   addNote,
   deleteNote,
+  updateNote,
   getNotesForDate,
   type Batch,
   type Completion,
@@ -16,6 +17,7 @@ import {
 } from '@/storage/store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from 'phosphor-react-native';
+import { Alert } from 'react-native';
 import {
   useCallback,
   useEffect,
@@ -47,6 +49,7 @@ export default function DayListScreen() {
   const [completions, setCompletions] = useState<Completion[]>(NO_COMPLETIONS);
   const [notes, setNotes] = useState<Note[]>(NO_NOTES);
   const [noteText, setNoteText] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadFlock().then((d) => {
@@ -96,12 +99,36 @@ export default function DayListScreen() {
     if (!noteText.trim()) return;
     await addNote(noteText.trim(), date);
     setNoteText('');
+    setEditingNoteId(null);
     const d = await loadFlock();
     setNotes(getNotesForDate(d.notes, date));
   };
 
   const handleDeleteNote = async (id: string) => {
-    await deleteNote(id);
+    await Alert.alert(
+      'Delete note',
+      'Are you sure you want to delete this note?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: async () => {
+          await deleteNote(id);
+          const d = await loadFlock();
+          setNotes(getNotesForDate(d.notes, date));
+        } },
+      ],
+    );
+  };
+
+  const handleEditNote = (id: string, currentText: string) => {
+    setEditingNoteId(id);
+    setNoteText(currentText);
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (!noteText.trim()) return;
+    await updateNote(id, noteText.trim(), date);
+    setNoteText('');
+    setEditingNoteId(null);
     const d = await loadFlock();
     setNotes(getNotesForDate(d.notes, date));
   };
@@ -134,7 +161,10 @@ export default function DayListScreen() {
 
   const addTask = () => {
     const batchId = data.batches[0]?.id;
-    if (!batchId) return;
+    if (!batchId) {
+      Alert.alert('No batch', 'Please set up a batch first before adding tasks.');
+      return;
+    }
     router.push(`/add-task?batchId=${batchId}&date=${date}`);
   };
 
@@ -252,18 +282,20 @@ export default function DayListScreen() {
               className="border border-border rounded-lg p-3 bg-background text-foreground min-h-[80px]"
               value={noteText}
               onChangeText={setNoteText}
-              placeholder="Add a note for this day…"
+              placeholder={editingNoteId ? 'Edit note…' : 'Add a note for this day…'}
               multiline
               numberOfLines={4}
             />
             <TouchableOpacity
-              className="bg-primary mt-2 px-4 py-2 rounded-lg"
+              className={`bg-primary mt-2 px-4 py-2 rounded-lg ${
+                !noteText.trim() ? 'opacity-50' : ''
+              }`}
               activeOpacity={0.7}
-              onPress={handleAddNote}
               disabled={!noteText.trim()}
+              onPress={() => editingNoteId ? handleSaveEdit(editingNoteId) : handleAddNote()}
             >
               <Text className="text-primary-foreground text-sm font-semibold">
-                Add note
+                {editingNoteId ? 'Save note' : 'Add note'}
               </Text>
             </TouchableOpacity>
             {notes.length === 0 ? (
@@ -278,7 +310,10 @@ export default function DayListScreen() {
                   key={note.id}
                   className="flex-row items-center justify-between rounded-xl border border-border bg-card px-3 py-2 mt-2"
                 >
-                  <View className="flex-1">
+                  <TouchableOpacity
+                    onPress={() => handleEditNote(note.id, note.text)}
+                    className="flex-1"
+                  >
                     <Text className="text-foreground text-sm">{note.text}</Text>
                     <Text className="text-muted-foreground text-[10px] mt-0.5">
                       {new Date(note.createdAt).toLocaleDateString(undefined, {
@@ -287,12 +322,12 @@ export default function DayListScreen() {
                         day: 'numeric',
                       })}
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                   <TouchableOpacity
                     className="p-1"
                     onPress={() => handleDeleteNote(note.id)}
                   >
-                    <TrashIcon size={16} color="#e6b800" weight="fill" />
+                    <TrashIcon size={16} color="#d41616" weight="fill" />
                   </TouchableOpacity>
                 </View>
               ))
