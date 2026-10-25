@@ -102,6 +102,14 @@ export async function updateNote(id: string, text: string): Promise<void> {
   });
 }
 
+export async function addMultipleRules(newRules: Rule[]): Promise<void> {
+  const data = await loadFlock();
+  await saveFlock({
+    ...data,
+    rules: [...data.rules, ...newRules],
+  });
+}
+
 export function getNotesForDate(notes: Note[], date: string): Note[] {
   const filteredNotes = notes.filter((n) => n.date === date);
   return filteredNotes.sort((a, b) => {

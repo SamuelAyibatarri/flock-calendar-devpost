@@ -33,8 +33,8 @@ export function isRuleDueOn(
   const offset = daysBetween(hatchDate, date);
   if (offset < 0) return false;
 
-  // Custom one-off task: due on its exact date
-  if (rule.kind === 'custom' && rule.dueDate) {
+  // Explicit one-off task: due on its exact date
+  if (rule.dueDate) {
     return date === rule.dueDate;
   }
 

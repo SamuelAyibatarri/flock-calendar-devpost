@@ -1,5 +1,6 @@
 import Screen from '@/components/Screen';
 import TaskRow from '@/components/TaskRow';
+import FlockAiModal from '@/components/FlockAiModal';
 import { useTheme } from '@/context/ThemeContext';
 import { formatLong, formatShort, todayIso } from '@/lib/date';
 import { addDays, isRuleDueOn } from '@/schedule/rules';
@@ -17,7 +18,7 @@ import {
   type Rule,
 } from '@/storage/store';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeftIcon, PlusIcon, TrashIcon } from 'phosphor-react-native';
+import { ArrowLeftIcon, PlusIcon, ShareNetworkIcon, SparkleIcon, TrashIcon } from 'phosphor-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -25,6 +26,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Share,
   Text,
   TextInput,
   TouchableOpacity,
@@ -48,6 +50,7 @@ export default function DayListScreen() {
   const [notes, setNotes] = useState<Note[]>(NO_NOTES);
   const [noteText, setNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
 
   const reload = useCallback(() => {
     loadFlock().then((d) => {
@@ -194,6 +197,28 @@ export default function DayListScreen() {
     router.push(`/add-task?batchId=${batchId}&date=${date}`);
   };
 
+  const handleShare = async () => {
+    const taskLines = selectedTasks.map((r) => {
+      const batch = batches.find((b) => b.id === r.batchId);
+      const check = completions.some((c) => c.ruleId === r.id && c.date === date) ? '✓' : ' ';
+      return `- [${check}] ${r.title}${batch ? ` (${batch.label})` : ''}`;
+    });
+    const textToShare = [
+      `🐓 Flock Care Routine for ${formatLong(date)}:`,
+      taskLines.length > 0 ? taskLines.join('\n') : '- No scheduled routine tasks today',
+      notes.length > 0
+        ? `\n📝 Farm Notes:\n${notes.map((n) => `- ${n.text}`).join('\n')}`
+        : '',
+      '\nTracked with Flock Calendar',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    try {
+      await Share.share({ message: textToShare });
+    } catch {}
+  };
+
   const isDark = theme === 'dark';
 
   return (
@@ -207,13 +232,31 @@ export default function DayListScreen() {
           <ArrowLeftIcon weight="bold" size={18} color={isDark ? '#f5f5f5' : '#1a1a1a'} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          accessibilityLabel="Add a task"
-          className="w-10 h-10 rounded-full bg-secondary items-center justify-center"
-          onPress={addTask}
-        >
-          <PlusIcon weight="bold" size={18} color="#1a1a1a" />
-        </TouchableOpacity>
+        <View className="flex-row items-center gap-2">
+          <TouchableOpacity
+            accessibilityLabel="Ask Flock AI"
+            className="w-10 h-10 rounded-full bg-muted items-center justify-center"
+            onPress={() => setAiModalOpen(true)}
+          >
+            <SparkleIcon weight="fill" size={18} color="#f59e0b" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            accessibilityLabel="Share Routine"
+            className="w-10 h-10 rounded-full bg-muted items-center justify-center"
+            onPress={handleShare}
+          >
+            <ShareNetworkIcon weight="bold" size={18} color={isDark ? '#f5f5f5' : '#1a1a1a'} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            accessibilityLabel="Add a task"
+            className="w-10 h-10 rounded-full bg-secondary items-center justify-center"
+            onPress={addTask}
+          >
+            <PlusIcon weight="bold" size={18} color="#1a1a1a" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <KeyboardAvoidingView
@@ -406,6 +449,13 @@ export default function DayListScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <FlockAiModal
+        visible={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        batches={batches}
+        onTasksAdded={reload}
+      />
     </Screen>
   );
 }

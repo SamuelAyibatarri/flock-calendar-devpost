@@ -1,10 +1,12 @@
 import SetupScreen from '@/app/setup';
 import BatchAdder from '@/components/BatchAdder';
+import FlockAiModal from '@/components/FlockAiModal';
 import MonthCalendar from '@/components/MonthCalendar';
 import Screen from '@/components/Screen';
 import TaskRow from '@/components/TaskRow';
 import { formatShort, todayIso } from '@/lib/date';
 import { isRuleDueOn } from '@/schedule/rules';
+import { generateBriefing } from '@/services/ai';
 import {
   addNote,
   deleteNote,
@@ -19,7 +21,7 @@ import {
   type Rule,
 } from '@/storage/store';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { PlusIcon, TrashIcon } from 'phosphor-react-native';
+import { PlusIcon, SparkleIcon, TrashIcon } from 'phosphor-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -46,6 +48,7 @@ export default function CalendarScreen() {
   const [completions, setCompletions] = useState<Completion[]>(NO_COMPLETIONS);
   const [monthOffset, setMonthOffset] = useState(0);
   const [addBatchOpen, setAddBatchOpen] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
   const [notes, setNotes] = useState<Note[]>(NO_NOTES);
   const [noteText, setNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -229,6 +232,31 @@ export default function CalendarScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Flock AI Farm Briefing */}
+          <View className="mx-4 mb-3.5 rounded-3xl border border-border bg-card p-4">
+            <View className="flex-row items-center justify-between mb-1.5">
+              <View className="flex-row items-center gap-1.5">
+                <SparkleIcon size={16} color="#f59e0b" weight="fill" />
+                <Text className="text-foreground text-xs font-bold uppercase tracking-wider">
+                  Flock AI Briefing
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setAiModalOpen(true)}
+                className="rounded-full bg-secondary px-2.5 py-1 flex-row items-center gap-1"
+                activeOpacity={0.8}
+              >
+                <SparkleIcon size={12} color="#1a1a1a" weight="bold" />
+                <Text className="text-secondary-foreground text-xs font-bold">
+                  Ask AI Vet
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text className="text-muted-foreground text-xs leading-relaxed">
+              {generateBriefing(batches, todayIso())}
+            </Text>
+          </View>
+
           <View className="mx-4 rounded-3xl border border-border bg-card p-4">
             <MonthCalendar
               monthAnchor={monthAnchor}
@@ -368,6 +396,13 @@ export default function CalendarScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <FlockAiModal
+        visible={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        batches={batches}
+        onTasksAdded={reload}
+      />
     </Screen>
   );
 }
