@@ -26,7 +26,8 @@ export async function initNotifications(): Promise<void> {
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#f59e0b',
-        sound: 'default',
+        enableVibrate: true,
+        enableLights: true,
       });
     } catch (e) {
       console.warn('[Notifications] Channel setup error:', e);
