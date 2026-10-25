@@ -208,14 +208,14 @@ export default function FlockAiModal({
                       Consultation Question
                     </Text>
                     <Text className="text-foreground text-xs font-medium">
-                      "{activeQuestion}"
+                      &quot;{activeQuestion}&quot;
                     </Text>
                   </View>
                 ) : null}
 
                 {/* Analysis Box */}
                 <View className="rounded-2xl border border-border bg-card p-4">
-                  <Text className="text-foreground text-xs font-bold uppercase tracking-wider mb-2 text-primary">
+                  <Text className="text-primary text-xs font-bold uppercase tracking-wider mb-2">
                     Veterinary Assessment
                   </Text>
                   <Text className="text-foreground text-sm leading-relaxed">
