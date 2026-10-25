@@ -1,56 +1,73 @@
-# Welcome to your Expo app 👋
+# Flock Calendar 🐓
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An intelligent flock care schedule & AI veterinary advisor built for layer poultry farmers managing multiple batches.
 
-## Get started
+Built for **Monday Samuel Chidera** (80+ layers across multiple batches at different ages) and smallholder poultry farmers who need an automated, reliable care routine without having to keep vaccination schedules and withdrawal intervals in their head.
 
-1. Install dependencies
+---
 
+## 🌟 Key Features
+
+* **Automated Care Schedule Generator**: Input bird age and daily routines (feed, checkups, egg-picking), and Flock Calendar automatically computes vaccination dates (Newcastle Lasota, Gumboro), multi-day deworming intervals (60-day cycle, 3-day duration), and sanitization routines.
+* **Flock AI — Poultry Vet & Schedule Advisor**:
+  * Powered by **Google Gemini 3.5 Flash Lite** (with an instant offline veterinary expert fallback).
+  * Analyzes symptoms and layer challenges (watery droppings, sudden drops in egg production, heat stress).
+  * Calculates exact medication and water intake volumes based on batch bird count.
+  * **1-Tap Calendar Injection**: Tap *"Add This Routine to Calendar"* to automatically parse and inject multi-day recovery steps directly into the farm schedule.
+* **Flock AI Daily Briefing**: Live status banner on the calendar tracking flock age and layer stage (e.g. *Peak Laying Stage (Week 22): ensure adequate calcium intake*).
+* **Multi-Batch Management**: Track multiple flocks hatched at different dates, each with its own customized age-driven schedule.
+* **7-Day Upcoming Care View & Checklist**: Day-by-day view showing today's tasks and the next 7 days of scheduled care with progress check-off.
+* **Daily Farm Notes**: Add, edit, and maintain dated farm records directly on the calendar.
+* **Share Routine with Farmhands**: One-tap sharing via WhatsApp or SMS to send daily task checklists and notes directly to farm attendants.
+* **Local Device Notifications**: Schedule daily 7:00 AM care alerts or trigger test reminders without relying on cloud push servers.
+* **BYOK (Bring Your Own Key)**: Configure your own Google Gemini API key in Settings, or use the pre-configured key / offline expert mode.
+* **Theme & UI**: Full Dark Mode and Light Mode support with native Android edge-to-edge system navigation bar contrast synchronization and smooth keyboard-avoiding views.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Framework**: React Native 0.88 / React 19
+* **Toolchain**: Expo SDK 58 (Expo Router, Expo Notifications, Expo System UI)
+* **AI Model**: Google Gemini API (`gemini-3.5-flash-lite`)
+* **Styling**: NativeWind v4 (Tailwind CSS) with custom eco farm palette
+* **Local Persistence**: AsyncStorage (100% offline-first)
+* **Icons**: Phosphor React Native (Duotone)
+* **Package Manager**: Bun
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+* [Bun](https://bun.sh/)
+* Android SDK or physical Android device connected via ADB
+
+### Installation
+
+1. Clone the repository:
    ```bash
-   npm install
+   git clone https://github.com/<your-username>/flock-calendar.git
+   cd flock-calendar
    ```
 
-2. Start the app
-
+2. Install dependencies:
    ```bash
-   npx expo start
+   bun install
    ```
 
-In the output, you'll find options to open the app in a
+3. (Optional) Set your Gemini API key in `.env.local` or enter it directly in the app's Settings screen:
+   ```bash
+   EXPO_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+   ```
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+4. Run on Android:
+   ```bash
+   bun expo run:android
+   ```
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+## 📄 License
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+MIT License. Built for the **Devpost: Build with AI: Basics** Hackathon.
