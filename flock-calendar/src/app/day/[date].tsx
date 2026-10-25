@@ -17,12 +17,14 @@ import {
   type Note,
   type Rule,
 } from '@/storage/store';
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeftIcon, PlusIcon, ShareNetworkIcon, SparkleIcon, TrashIcon } from 'phosphor-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -41,6 +43,8 @@ const NO_NOTES: Note[] = [];
 export default function DayListScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const keyboardHeight = useKeyboardHeight();
+  const scrollViewRef = useRef<React.ElementRef<typeof ScrollView>>(null);
   const { theme } = useTheme();
   const date = typeof params.date === 'string' ? params.date : todayIso();
 
@@ -104,6 +108,7 @@ export default function DayListScreen() {
 
   const handleAddNote = async () => {
     if (!noteText.trim()) return;
+    Keyboard.dismiss();
     await addNote(noteText.trim(), date);
     setNoteText('');
     setEditingNoteId(null);
@@ -137,6 +142,7 @@ export default function DayListScreen() {
 
   const handleSaveEdit = async (id: string) => {
     if (!noteText.trim()) return;
+    Keyboard.dismiss();
     await updateNote(id, noteText.trim());
     setNoteText('');
     setEditingNoteId(null);
@@ -264,8 +270,9 @@ export default function DayListScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView
+          ref={scrollViewRef}
           className="flex-1"
-          contentContainerStyle={{ paddingBottom: 110 }}
+          contentContainerStyle={{ paddingBottom: keyboardHeight > 0 ? keyboardHeight + 130 : 120 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -399,6 +406,11 @@ export default function DayListScreen() {
               placeholderTextColor={isDark ? '#888888' : '#999999'}
               multiline
               numberOfLines={4}
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd({ animated: true });
+                }, 150);
+              }}
             />
             <TouchableOpacity
               className={`bg-primary mt-2 px-4 py-2.5 rounded-xl ${

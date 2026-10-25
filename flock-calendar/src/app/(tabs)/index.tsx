@@ -20,13 +20,15 @@ import {
   type Note,
   type Rule,
 } from '@/storage/store';
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { CalendarBlankIcon, PlusIcon, SparkleIcon, TrashIcon } from 'phosphor-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -43,6 +45,8 @@ const NO_NOTES: Note[] = [];
 
 export default function CalendarScreen() {
   const router = useRouter();
+  const keyboardHeight = useKeyboardHeight();
+  const scrollViewRef = useRef<React.ElementRef<typeof ScrollView>>(null);
   const [data, setData] = useState<FlockData | null>(null);
   const [loading, setLoading] = useState(true);
   const [completions, setCompletions] = useState<Completion[]>(NO_COMPLETIONS);
@@ -116,6 +120,7 @@ export default function CalendarScreen() {
 
   const handleAddNote = async () => {
     if (!noteText.trim()) return;
+    Keyboard.dismiss();
     await addNote(noteText.trim(), todayIso());
     setNoteText('');
     setEditingNoteId(null);
@@ -145,6 +150,7 @@ export default function CalendarScreen() {
 
   const handleSaveEdit = async (id: string) => {
     if (!noteText.trim()) return;
+    Keyboard.dismiss();
     await updateNote(id, noteText.trim());
     setNoteText('');
     setEditingNoteId(null);
@@ -227,8 +233,9 @@ export default function CalendarScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView
+          ref={scrollViewRef}
           className="flex-1"
-          contentContainerStyle={{ paddingBottom: 110 }}
+          contentContainerStyle={{ paddingBottom: keyboardHeight > 0 ? keyboardHeight + 130 : 120 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -348,6 +355,11 @@ export default function CalendarScreen() {
               placeholder={editingNoteId ? 'Edit note…' : 'Add a note for today…'}
               multiline
               numberOfLines={4}
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd({ animated: true });
+                }, 150);
+              }}
             />
             <TouchableOpacity
               className={`bg-primary mt-2 px-4 py-2 rounded-lg ${

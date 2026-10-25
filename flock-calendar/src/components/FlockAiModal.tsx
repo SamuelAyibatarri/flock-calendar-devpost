@@ -1,16 +1,16 @@
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useTheme } from '@/context/ThemeContext';
 import { formatShort, todayIso } from '@/lib/date';
 import { addDays } from '@/schedule/rules';
 import { askFlockAi, type AiConsultationResult } from '@/services/ai';
 import { addMultipleRules, type Batch, type Rule } from '@/storage/store';
 import { CalendarPlusIcon, CheckCircleIcon, PillIcon, SparkleIcon, XIcon } from 'phosphor-react-native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
-  LayoutAnimation,
   Modal,
   Platform,
   ScrollView,
@@ -45,32 +45,7 @@ export default function FlockAiModal({
   const isDark = theme === 'dark';
   const today = todayIso();
   const insets = useSafeAreaInsets();
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    const showSub = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
-        try {
-          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        } catch {}
-        setKeyboardHeight(e.endCoordinates.height);
-      }
-    );
-    const hideSub = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => {
-        try {
-          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        } catch {}
-        setKeyboardHeight(0);
-      }
-    );
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
+  const keyboardHeight = useKeyboardHeight();
 
   const [query, setQuery] = useState('');
   const [activeQuestion, setActiveQuestion] = useState('');
