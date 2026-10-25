@@ -40,6 +40,7 @@ export default function HistoryScreen() {
   const rules = data?.rules ?? NO_RULES;
 
   const grouped = completions.reduce<Record<string, Completion[]>>((acc, comp) => {
+    if (!comp || !comp.date) return acc;
     if (!acc[comp.date]) acc[comp.date] = [];
     acc[comp.date].push(comp);
     return acc;
@@ -83,12 +84,19 @@ export default function HistoryScreen() {
               <Text className="text-muted-foreground text-xs font-semibold uppercase tracking-wide mb-3 ml-1">
                 {formatLong(date)}
               </Text>
-              {grouped[date].map((completion) => {
+              {grouped[date].map((completion, idx) => {
                 const rule = rules.find((r) => r.id === completion.ruleId);
+                const instanceLabel =
+                  completion.instanceIndex !== undefined
+                    ? ` (Instance #${completion.instanceIndex + 1})`
+                    : '';
                 return (
-                  <View key={completion.ruleId + completion.date} className="mb-2">
+                  <View
+                    key={`${completion.ruleId}-${completion.date}-${completion.instanceIndex ?? 0}-${completion.doneAt ?? idx}-${idx}`}
+                    className="mb-2"
+                  >
                     <TaskRow
-                      title={rule?.title ?? 'Task'}
+                      title={(rule?.title ?? 'Completed Task') + instanceLabel}
                       kind={rule?.kind ?? 'custom'}
                       checked
                       onToggle={() => {}}
