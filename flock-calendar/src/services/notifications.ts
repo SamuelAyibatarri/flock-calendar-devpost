@@ -9,7 +9,6 @@ const CHANNEL_ID = 'flock-care-alerts';
 // Configure foreground presentation behavior
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldShowBanner: true,
     shouldShowList: true,
     shouldPlaySound: true,
