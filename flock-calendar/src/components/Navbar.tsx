@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import { usePathname, useRouter, type Href } from 'expo-router';
 import { GearIcon, HouseIcon, ListIcon, PlusIcon } from 'phosphor-react-native';
 import { Pressable, View, type ViewStyle } from 'react-native';
@@ -44,6 +45,8 @@ export function CustomTabBar() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const tabs: TabItem[] = [
     { name: 'index', path: '/' },
@@ -86,6 +89,8 @@ export function CustomTabBar() {
             backgroundColor: '#1a1a1a',
             borderRadius: ICON_SIZE / 2 + 6,
             padding: 5,
+            borderWidth: 1.5,
+            borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.1)',
           }}
         >
           {tabs.map((tab) => (
@@ -105,6 +110,7 @@ export function CustomTabBar() {
           style={{
             width: ICON_SIZE,
             height: ICON_SIZE,
+            borderWidth: 1.5,
           }}
           onPress={() => router.push('/add-task')}
         >

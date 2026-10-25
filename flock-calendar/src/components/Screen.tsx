@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { NavigationBar } from 'expo-navigation-bar';
 
 type Props = {
   children: ReactNode;
@@ -24,6 +25,7 @@ export default function Screen({ children, edges = 'both' }: Props) {
       }}
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <NavigationBar style={isDark ? 'dark' : 'light'} />
       {children}
     </View>
   );

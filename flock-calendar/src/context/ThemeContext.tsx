@@ -1,6 +1,7 @@
-import { createContext, useContext, useCallback, ReactNode, useState } from 'react';
+import { createContext, useContext, useCallback, ReactNode, useState, useEffect } from 'react';
 import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
-import { useColorScheme as useRNColorScheme, ColorSchemeName } from 'react-native';
+import { useColorScheme as useRNColorScheme, ColorSchemeName, Platform } from 'react-native';
+import * as SystemUI from 'expo-system-ui';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -19,6 +20,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const theme: ColorSchemeName =
     mode === 'system' ? (colorScheme ?? systemScheme ?? 'light') : mode;
+
+  useEffect(() => {
+    const isDark = theme === 'dark';
+    if (Platform.OS === 'android') {
+      SystemUI.setBackgroundColorAsync(isDark ? '#141414' : '#ffffff').catch(() => {});
+    }
+  }, [theme]);
 
   const setMode = useCallback((newMode: ThemeMode) => {
     setModeState(newMode);
