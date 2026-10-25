@@ -1,14 +1,63 @@
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Batch, RuleKind } from '@/storage/store';
 import { daysBetween } from '@/schedule/rules';
 
 const MODEL = 'gemini-3.5-flash-lite';
 const TIMEOUT_MS = 25000;
+const CUSTOM_KEY_STORAGE = 'flock:custom_gemini_api_key';
+
+let cachedCustomKey: string | null = null;
+let customKeyInitialized = false;
+
+export async function getCustomApiKey(): Promise<string | null> {
+  if (customKeyInitialized) return cachedCustomKey;
+  try {
+    const val = await AsyncStorage.getItem(CUSTOM_KEY_STORAGE);
+    cachedCustomKey = val ? val.trim() : null;
+  } catch {
+    cachedCustomKey = null;
+  }
+  customKeyInitialized = true;
+  return cachedCustomKey;
+}
+
+export async function setCustomApiKey(key: string): Promise<void> {
+  const trimmed = key.trim();
+  cachedCustomKey = trimmed || null;
+  customKeyInitialized = true;
+  if (trimmed) {
+    await AsyncStorage.setItem(CUSTOM_KEY_STORAGE, trimmed);
+  } else {
+    await AsyncStorage.removeItem(CUSTOM_KEY_STORAGE);
+  }
+}
 
 export function getGeminiKey(): string | null {
+  const custom = cachedCustomKey;
   const extra = (Constants.expoConfig?.extra as any)?.GEMINI_API_KEY;
   const env = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-  return extra || env || null;
+  return custom || extra || env || null;
+}
+
+export async function getApiKeyStatus(): Promise<{ hasKey: boolean; isCustom: boolean; maskedKey?: string }> {
+  const custom = await getCustomApiKey();
+  if (custom) {
+    return {
+      hasKey: true,
+      isCustom: true,
+      maskedKey: `••••••••${custom.slice(-4)}`,
+    };
+  }
+  const env = (Constants.expoConfig?.extra as any)?.GEMINI_API_KEY || process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+  if (env) {
+    return {
+      hasKey: true,
+      isCustom: false,
+      maskedKey: `••••••••${env.slice(-4)}`,
+    };
+  }
+  return { hasKey: false, isCustom: false };
 }
 
 export type AiTaskSuggestion = {
@@ -30,6 +79,7 @@ export async function askFlockAi(
   batches: Batch[],
   todayStr: string
 ): Promise<AiConsultationResult> {
+  await getCustomApiKey();
   const key = getGeminiKey();
   if (!key) {
     return getOfflineFallbackAdvice(userQuery, batches);

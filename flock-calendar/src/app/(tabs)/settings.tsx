@@ -1,22 +1,30 @@
 import BatchAdder from '@/components/BatchAdder';
 import Screen from '@/components/Screen';
 import { useTheme } from '@/context/ThemeContext';
+import { getApiKeyStatus, setCustomApiKey } from '@/services/ai';
 import { loadFlock, type Batch } from '@/storage/store';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { ArrowLeftIcon, ArrowRightIcon, PlusIcon } from 'phosphor-react-native';
+import { ArrowLeftIcon, ArrowRightIcon, KeyIcon, PlusIcon, SparkleIcon } from 'phosphor-react-native';
 import { useCallback, useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { mode, theme, setMode } = useTheme();
   const [batches, setBatches] = useState<Batch[]>([]);
   const [addBatchOpen, setAddBatchOpen] = useState(false);
+  const [keyStatus, setKeyStatus] = useState<{ hasKey: boolean; isCustom: boolean; maskedKey?: string }>({
+    hasKey: false,
+    isCustom: false,
+  });
+  const [keyInput, setKeyInput] = useState('');
+  const [showKeyEditor, setShowKeyEditor] = useState(false);
 
   const reload = useCallback(() => {
     loadFlock().then((d) => {
       setBatches(d.batches);
     });
+    getApiKeyStatus().then(setKeyStatus);
   }, []);
 
   useFocusEffect(
@@ -24,6 +32,36 @@ export default function SettingsScreen() {
       reload();
     }, [reload]),
   );
+
+  const handleSaveApiKey = async () => {
+    if (!keyInput.trim()) {
+      Alert.alert('Empty Key', 'Please paste your Gemini API key, or tap Cancel.');
+      return;
+    }
+    await setCustomApiKey(keyInput.trim());
+    setKeyInput('');
+    setShowKeyEditor(false);
+    await reload();
+    Alert.alert('Key Saved', 'Your custom Gemini API key is now active for Flock AI.');
+  };
+
+  const handleClearApiKey = async () => {
+    Alert.alert(
+      'Remove Custom Key',
+      'Are you sure you want to remove your custom Gemini key?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            await setCustomApiKey('');
+            await reload();
+          },
+        },
+      ]
+    );
+  };
 
   if (addBatchOpen) {
     return (
@@ -92,6 +130,97 @@ export default function SettingsScreen() {
               />
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Flock AI Settings (Gemini BYOK) */}
+        <View className="mx-4 rounded-3xl border border-border bg-card p-4 mb-4">
+          <View className="flex-row items-center justify-between mb-2">
+            <View className="flex-row items-center gap-1.5">
+              <SparkleIcon size={16} color="#f59e0b" weight="fill" />
+              <Text className="text-foreground text-sm font-semibold">
+                Flock AI (Gemini)
+              </Text>
+            </View>
+            <View className="rounded-full bg-secondary/20 px-2 py-0.5">
+              <Text className="text-secondary-foreground text-xs font-bold">
+                {keyStatus.isCustom
+                  ? 'Custom Key'
+                  : keyStatus.hasKey
+                  ? 'Default Key'
+                  : 'Offline Mode'}
+              </Text>
+            </View>
+          </View>
+
+          <Text className="text-muted-foreground text-xs leading-relaxed mb-3">
+            Flock AI uses Google Gemini to provide veterinary advice, dosage calculations, and schedule recovery routines.
+          </Text>
+
+          {keyStatus.maskedKey && (
+            <View className="flex-row items-center justify-between py-2 border-t border-border/50 mb-2">
+              <View className="flex-row items-center gap-1.5">
+                <KeyIcon size={14} color="#f59e0b" weight="duotone" />
+                <Text className="text-foreground text-xs font-mono">
+                  {keyStatus.maskedKey}
+                </Text>
+              </View>
+              {keyStatus.isCustom && (
+                <TouchableOpacity onPress={handleClearApiKey}>
+                  <Text className="text-destructive text-xs font-semibold">
+                    Remove
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {!showKeyEditor ? (
+            <TouchableOpacity
+              onPress={() => setShowKeyEditor(true)}
+              className="rounded-xl border border-border bg-muted/40 py-2.5 px-3 items-center mt-1"
+            >
+              <Text className="text-foreground text-xs font-semibold">
+                {keyStatus.isCustom ? 'Change API Key' : 'Add Custom Gemini API Key'}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View className="mt-2 pt-2 border-t border-border/50">
+              <Text className="text-muted-foreground text-xs mb-1.5">
+                Paste your Google Gemini API key:
+              </Text>
+              <TextInput
+                value={keyInput}
+                onChangeText={setKeyInput}
+                placeholder="AIzaSy..."
+                placeholderTextColor={isDark ? '#737373' : '#a3a3a3'}
+                className="rounded-xl border border-border bg-background px-3 py-2 text-foreground text-xs font-mono mb-2"
+                autoCapitalize="none"
+                autoCorrect={false}
+                secureTextEntry
+              />
+              <View className="flex-row items-center gap-2 justify-end">
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowKeyEditor(false);
+                    setKeyInput('');
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-muted"
+                >
+                  <Text className="text-muted-foreground text-xs font-semibold">
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleSaveApiKey}
+                  className="px-4 py-1.5 rounded-lg bg-secondary"
+                >
+                  <Text className="text-secondary-foreground text-xs font-bold">
+                    Save Key
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Flock Batches */}
