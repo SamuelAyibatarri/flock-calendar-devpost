@@ -36,6 +36,38 @@
     --radius: 1rem;
   }
 
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: 0 0% 8%;
+      --foreground: 0 0% 94%;
+
+      --card: 0 0% 11%;
+      --card-foreground: 0 0% 94%;
+
+      --popover: 0 0% 11%;
+      --popover-foreground: 0 0% 94%;
+
+      --primary: 0 0% 94%;
+      --primary-foreground: 0 0% 8%;
+
+      --secondary: 55 80% 55%;
+      --secondary-foreground: 0 0% 8%;
+
+      --muted: 0 0% 18%;
+      --muted-foreground: 0 0% 55%;
+
+      --accent: 0 70% 45%;
+      --accent-foreground: 0 0% 94%;
+
+      --destructive: 0 62% 50%;
+      --destructive-foreground: 0 0% 100%;
+
+      --border: 0 0% 22%;
+      --input: 0 0% 22%;
+      --ring: 0 0% 94%;
+    }
+  }
+
   .dark {
     --background: 0 0% 8%;
     --foreground: 0 0% 94%;

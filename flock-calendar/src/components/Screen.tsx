@@ -17,7 +17,7 @@ export default function Screen({ children, edges = 'both' }: Props) {
 
   return (
     <View
-      className={`flex-1 bg-background ${isDark ? 'dark' : ''}`}
+      className="flex-1 bg-background"
       style={{
         paddingTop: insets.top,
         paddingBottom: edges === 'both' ? insets.bottom : 0,
