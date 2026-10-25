@@ -6,6 +6,8 @@ import {
   ThemeProvider as RouterThemeProvider,
 } from 'expo-router';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import { useEffect } from 'react';
+import { initNotifications } from '@/services/notifications';
 
 function ThemeStack() {
   const { theme } = useTheme();
@@ -28,6 +30,10 @@ function ThemeStack() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    initNotifications().catch(() => {});
+  }, []);
+
   return (
     <ThemeProvider>
       <ThemeStack />
