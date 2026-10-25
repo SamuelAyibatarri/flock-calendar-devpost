@@ -43,12 +43,12 @@ Built for **Monday Samuel Chidera** (80+ layers across multiple batches at diffe
 * [Bun](https://bun.sh/)
 * Android SDK or physical Android device connected via ADB
 
-### Installation
+### Installation & Running Locally
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/<your-username>/flock-calendar.git
-   cd flock-calendar
+   git clone https://github.com/SamuelAyibatarri/flock-calendar-devpost.git
+   cd flock-calendar-devpost/flock-calendar
    ```
 
 2. Install dependencies:
@@ -56,15 +56,25 @@ Built for **Monday Samuel Chidera** (80+ layers across multiple batches at diffe
    bun install
    ```
 
-3. (Optional) Set your Gemini API key in `.env.local` or enter it directly in the app's Settings screen:
+3. (Optional) Set your Gemini API key in `.env.local` or enter it directly in the app's Settings screen (BYOK):
    ```bash
    EXPO_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
    ```
 
-4. Run on Android:
+4. Run locally on an Android device or emulator:
    ```bash
    bun expo run:android
    ```
+
+### 📦 Building a Standalone APK (EAS Build)
+
+To build a standalone installable Android APK that anyone can test without setting up the dev environment:
+
+```bash
+cd flock-calendar
+eas build -p android --profile prototype_apk
+```
+*The resulting `.apk` can be installed directly onto any Android device.*
 
 ---
 
