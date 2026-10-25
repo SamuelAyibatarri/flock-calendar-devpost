@@ -4,6 +4,7 @@ import FlockAiModal from '@/components/FlockAiModal';
 import MonthCalendar from '@/components/MonthCalendar';
 import Screen from '@/components/Screen';
 import TaskRow from '@/components/TaskRow';
+import { useTheme } from '@/context/ThemeContext';
 import { formatShort, todayIso } from '@/lib/date';
 import { isRuleDueOn } from '@/schedule/rules';
 import { generateBriefing } from '@/services/ai';
@@ -22,7 +23,7 @@ import {
 } from '@/storage/store';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { CalendarBlankIcon, PlusIcon, SparkleIcon, TrashIcon } from 'phosphor-react-native';
+import { CalendarBlankIcon, PlusIcon, SparkleIcon, TrashIcon, XIcon } from 'phosphor-react-native';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -45,6 +46,8 @@ const NO_NOTES: Note[] = [];
 
 export default function CalendarScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const keyboardHeight = useKeyboardHeight();
   const scrollViewRef = useRef<React.ElementRef<typeof ScrollView>>(null);
   const [data, setData] = useState<FlockData | null>(null);
@@ -56,6 +59,7 @@ export default function CalendarScreen() {
   const [notes, setNotes] = useState<Note[]>(NO_NOTES);
   const [noteText, setNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [selectedBatchFilter, setSelectedBatchFilter] = useState<string>('all');
 
   const reload = useCallback(() => {
     loadFlock().then((d) => {
@@ -89,34 +93,93 @@ export default function CalendarScreen() {
     [rules, batches],
   );
 
-  const isDone = useCallback(
-    (ruleId: string, date: string) =>
-      completions.some((c) => c.ruleId === ruleId && c.date === date),
+  const getCompletedInstances = useCallback(
+    (ruleId: string, date: string): number[] => {
+      return completions
+        .filter((c) => c.ruleId === ruleId && c.date === date)
+        .map((c) => c.instanceIndex ?? 0);
+    },
     [completions],
   );
 
-    const today = todayIso();
-  const todayTasks = useMemo(() => dueFor(today), [dueFor, today]);
-  const pendingToday = useMemo(() => 
-    todayTasks.filter((r) => !isDone(r.id, today)), 
-  [todayTasks, isDone, today]);
-  const doneToday = useMemo(() => 
-    todayTasks.filter((r) => isDone(r.id, today)), 
-  [todayTasks, isDone, today]);
+  const isDone = useCallback(
+    (rule: Rule, date: string) => {
+      const times = rule.timesPerDay && rule.timesPerDay > 1 ? rule.timesPerDay : 1;
+      const completed = getCompletedInstances(rule.id, date);
+      return completed.length >= times;
+    },
+    [getCompletedInstances],
+  );
 
-  const toggle = (ruleId: string, date: string) => {
+  const toggleInstance = (ruleId: string, date: string, instanceIndex: number) => {
     if (!data) return;
-    const done = completions.some(
-      (c) => c.ruleId === ruleId && c.date === date,
+    const exists = completions.some(
+      (c) =>
+        c.ruleId === ruleId &&
+        c.date === date &&
+        (c.instanceIndex ?? 0) === instanceIndex,
     );
-    const updated = done
+    const updated = exists
       ? completions.filter(
-          (c) => !(c.ruleId === ruleId && c.date === date),
+          (c) =>
+            !(
+              c.ruleId === ruleId &&
+              c.date === date &&
+              (c.instanceIndex ?? 0) === instanceIndex
+            ),
         )
-      : [...completions, { ruleId, date, doneAt: new Date().toISOString() }];
+      : [
+          ...completions,
+          {
+            ruleId,
+            date,
+            doneAt: new Date().toISOString(),
+            instanceIndex,
+          },
+        ];
     setCompletions(updated);
     saveFlock({ ...data, completions: updated });
   };
+
+  const toggle = (rule: Rule, date: string) => {
+    if (!data) return;
+    const times = rule.timesPerDay && rule.timesPerDay > 1 ? rule.timesPerDay : 1;
+    const completed = getCompletedInstances(rule.id, date);
+
+    if (completed.length >= times) {
+      const updated = completions.filter(
+        (c) => !(c.ruleId === rule.id && c.date === date),
+      );
+      setCompletions(updated);
+      saveFlock({ ...data, completions: updated });
+    } else {
+      let nextIdx = 0;
+      for (let i = 0; i < times; i++) {
+        if (!completed.includes(i)) {
+          nextIdx = i;
+          break;
+        }
+      }
+      toggleInstance(rule.id, date, nextIdx);
+    }
+  };
+
+  const today = todayIso();
+  const todayTasks = useMemo(() => dueFor(today), [dueFor, today]);
+
+  const filteredTodayTasks = useMemo(() => {
+    if (selectedBatchFilter === 'all') return todayTasks;
+    return todayTasks.filter((r) => r.batchId === selectedBatchFilter);
+  }, [todayTasks, selectedBatchFilter]);
+
+  const pendingToday = useMemo(
+    () => filteredTodayTasks.filter((r) => !isDone(r, today)),
+    [filteredTodayTasks, isDone, today],
+  );
+  const doneToday = useMemo(
+    () => filteredTodayTasks.filter((r) => isDone(r, today)),
+    [filteredTodayTasks, isDone, today],
+  );
 
   const handleAddNote = async () => {
     if (!noteText.trim()) return;
@@ -170,7 +233,7 @@ export default function CalendarScreen() {
 
   // First-run gate: nothing configured yet -> show setup directly
   if (batches.length === 0) {
-    return <SetupScreen />;
+    return <SetupScreen onDone={reload} />;
   }
 
   if (addBatchOpen) {
@@ -297,6 +360,61 @@ export default function CalendarScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+
+            {/* Batch Filter Pills if multiple batches exist */}
+            {batches.length > 1 && (
+              <View className="mb-3">
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 8 }}
+                >
+                  <TouchableOpacity
+                    className={`px-3 py-1.5 rounded-full border ${
+                      selectedBatchFilter === 'all'
+                        ? 'bg-primary border-primary'
+                        : 'bg-muted border-border'
+                    }`}
+                    onPress={() => setSelectedBatchFilter('all')}
+                  >
+                    <Text
+                      className={`text-xs font-semibold ${
+                        selectedBatchFilter === 'all'
+                          ? 'text-primary-foreground'
+                          : 'text-foreground'
+                      }`}
+                    >
+                      All Batches ({todayTasks.length})
+                    </Text>
+                  </TouchableOpacity>
+
+                  {batches.map((batch) => {
+                    const count = todayTasks.filter((r) => r.batchId === batch.id).length;
+                    const active = selectedBatchFilter === batch.id;
+                    return (
+                      <TouchableOpacity
+                        key={batch.id}
+                        className={`px-3 py-1.5 rounded-full border ${
+                          active
+                            ? 'bg-primary border-primary'
+                            : 'bg-muted border-border'
+                        }`}
+                        onPress={() => setSelectedBatchFilter(batch.id)}
+                      >
+                        <Text
+                          className={`text-xs font-semibold ${
+                            active ? 'text-primary-foreground' : 'text-foreground'
+                          }`}
+                        >
+                          {batch.label} ({count})
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
+
             <Text className="text-muted-foreground text-xs mb-3">
               {formatShort(today)}
               {pendingToday.length > 0
@@ -310,7 +428,10 @@ export default function CalendarScreen() {
                 title={rule.title}
                 kind={rule.kind}
                 checked={false}
-                onToggle={() => toggle(rule.id, today)}
+                onToggle={() => toggle(rule, today)}
+                timesPerDay={rule.timesPerDay}
+                completedInstances={getCompletedInstances(rule.id, today)}
+                onToggleInstance={(idx) => toggleInstance(rule.id, today, idx)}
               />
             ))}
 
@@ -336,7 +457,10 @@ export default function CalendarScreen() {
                     title={rule.title}
                     kind={rule.kind}
                     checked
-                    onToggle={() => toggle(rule.id, today)}
+                    onToggle={() => toggle(rule, today)}
+                    timesPerDay={rule.timesPerDay}
+                    completedInstances={getCompletedInstances(rule.id, today)}
+                    onToggleInstance={(idx) => toggleInstance(rule.id, today, idx)}
                   />
                 ))}
               </View>
@@ -361,18 +485,33 @@ export default function CalendarScreen() {
                 }, 150);
               }}
             />
-            <TouchableOpacity
-              className={`bg-primary mt-2 px-4 py-2 rounded-lg ${
-                !noteText.trim() ? 'opacity-50' : ''
-              }`}
-              activeOpacity={0.7}
-              disabled={!noteText.trim()}
-              onPress={() => editingNoteId ? handleSaveEdit(editingNoteId) : handleAddNote()}
-            >
-              <Text className="text-primary-foreground text-sm font-semibold">
-                {editingNoteId ? 'Save note' : 'Add note'}
-              </Text>
-            </TouchableOpacity>
+            <View className="flex-row items-center gap-2 mt-2">
+              <TouchableOpacity
+                className={`flex-1 bg-primary px-4 py-2 rounded-lg items-center ${
+                  !noteText.trim() ? 'opacity-50' : ''
+                }`}
+                activeOpacity={0.7}
+                disabled={!noteText.trim()}
+                onPress={() => editingNoteId ? handleSaveEdit(editingNoteId) : handleAddNote()}
+              >
+                <Text className="text-primary-foreground text-sm font-semibold">
+                  {editingNoteId ? 'Save note' : 'Add note'}
+                </Text>
+              </TouchableOpacity>
+              {editingNoteId && (
+                <TouchableOpacity
+                  className="px-3 py-2 rounded-lg bg-muted flex-row items-center gap-1.5"
+                  onPress={() => {
+                    setEditingNoteId(null);
+                    setNoteText('');
+                  }}
+                  accessibilityLabel="Cancel editing"
+                >
+                  <XIcon size={14} color={isDark ? '#f5f5f5' : '#1a1a1a'} weight="bold" />
+                  <Text className="text-muted-foreground text-xs font-semibold">Cancel</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             {notes.length === 0 ? (
               <View className="rounded-xl border border-dashed border-border bg-card px-4 py-4 mt-2 items-center">
                 <Text className="text-muted-foreground text-sm text-center">

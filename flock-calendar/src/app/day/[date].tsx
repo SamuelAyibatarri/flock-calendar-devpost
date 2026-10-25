@@ -19,7 +19,7 @@ import {
 } from '@/storage/store';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeftIcon, PlusIcon, ShareNetworkIcon, SparkleIcon, TrashIcon } from 'phosphor-react-native';
+import { ArrowLeftIcon, PlusIcon, ShareNetworkIcon, SparkleIcon, TrashIcon, XIcon } from 'phosphor-react-native';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -55,6 +55,7 @@ export default function DayListScreen() {
   const [noteText, setNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [selectedBatchFilter, setSelectedBatchFilter] = useState<string>('all');
 
   const reload = useCallback(() => {
     loadFlock().then((d) => {
@@ -88,22 +89,75 @@ export default function DayListScreen() {
     [rules, batches],
   );
 
-  const isDone = useCallback(
-    (ruleId: string, day: string) =>
-      completions.some((c) => c.ruleId === ruleId && c.date === day),
+  const getCompletedInstances = useCallback(
+    (ruleId: string, day: string): number[] => {
+      return completions
+        .filter((c) => c.ruleId === ruleId && c.date === day)
+        .map((c) => c.instanceIndex ?? 0);
+    },
     [completions],
   );
 
-  const toggle = (ruleId: string, day: string) => {
+  const isDone = useCallback(
+    (rule: Rule, day: string) => {
+      const times = rule.timesPerDay && rule.timesPerDay > 1 ? rule.timesPerDay : 1;
+      const completed = getCompletedInstances(rule.id, day);
+      return completed.length >= times;
+    },
+    [getCompletedInstances],
+  );
+
+  const toggleInstance = (ruleId: string, day: string, instanceIndex: number) => {
     if (!data) return;
-    const done = completions.some(
-      (c) => c.ruleId === ruleId && c.date === day,
+    const exists = completions.some(
+      (c) =>
+        c.ruleId === ruleId &&
+        c.date === day &&
+        (c.instanceIndex ?? 0) === instanceIndex,
     );
-    const updated = done
-      ? completions.filter((c) => !(c.ruleId === ruleId && c.date === day))
-      : [...completions, { ruleId, date: day, doneAt: new Date().toISOString() }];
+    const updated = exists
+      ? completions.filter(
+          (c) =>
+            !(
+              c.ruleId === ruleId &&
+              c.date === day &&
+              (c.instanceIndex ?? 0) === instanceIndex
+            ),
+        )
+      : [
+          ...completions,
+          {
+            ruleId,
+            date: day,
+            doneAt: new Date().toISOString(),
+            instanceIndex,
+          },
+        ];
     setCompletions(updated);
     saveFlock({ ...data, completions: updated });
+  };
+
+  const toggle = (rule: Rule, day: string) => {
+    if (!data) return;
+    const times = rule.timesPerDay && rule.timesPerDay > 1 ? rule.timesPerDay : 1;
+    const completed = getCompletedInstances(rule.id, day);
+
+    if (completed.length >= times) {
+      const updated = completions.filter(
+        (c) => !(c.ruleId === rule.id && c.date === day),
+      );
+      setCompletions(updated);
+      saveFlock({ ...data, completions: updated });
+    } else {
+      let nextIdx = 0;
+      for (let i = 0; i < times; i++) {
+        if (!completed.includes(i)) {
+          nextIdx = i;
+          break;
+        }
+      }
+      toggleInstance(rule.id, day, nextIdx);
+    }
   };
 
   const handleAddNote = async () => {
@@ -152,13 +206,19 @@ export default function DayListScreen() {
 
   const today = todayIso();
   const selectedTasks = useMemo(() => dueFor(date), [dueFor, date]);
+
+  const filteredSelectedTasks = useMemo(() => {
+    if (selectedBatchFilter === 'all') return selectedTasks;
+    return selectedTasks.filter((r) => r.batchId === selectedBatchFilter);
+  }, [selectedTasks, selectedBatchFilter]);
+
   const pending = useMemo(
-    () => selectedTasks.filter((r) => !isDone(r.id, date)),
-    [selectedTasks, isDone, date],
+    () => filteredSelectedTasks.filter((r) => !isDone(r, date)),
+    [filteredSelectedTasks, isDone, date],
   );
   const done = useMemo(
-    () => selectedTasks.filter((r) => isDone(r.id, date)),
-    [selectedTasks, isDone, date],
+    () => filteredSelectedTasks.filter((r) => isDone(r, date)),
+    [filteredSelectedTasks, isDone, date],
   );
   const isToday = date === today;
 
@@ -302,6 +362,60 @@ export default function DayListScreen() {
             </Text>
           </View>
 
+          {/* Batch Filter Pills if multiple batches exist */}
+          {batches.length > 1 && (
+            <View className="mx-4 mb-3">
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 8 }}
+              >
+                <TouchableOpacity
+                  className={`px-3 py-1.5 rounded-full border ${
+                    selectedBatchFilter === 'all'
+                      ? 'bg-primary border-primary'
+                      : 'bg-muted border-border'
+                  }`}
+                  onPress={() => setSelectedBatchFilter('all')}
+                >
+                  <Text
+                    className={`text-xs font-semibold ${
+                      selectedBatchFilter === 'all'
+                        ? 'text-primary-foreground'
+                        : 'text-foreground'
+                    }`}
+                  >
+                    All Batches ({selectedTasks.length})
+                  </Text>
+                </TouchableOpacity>
+
+                {batches.map((batch) => {
+                  const count = selectedTasks.filter((r) => r.batchId === batch.id).length;
+                  const active = selectedBatchFilter === batch.id;
+                  return (
+                    <TouchableOpacity
+                      key={batch.id}
+                      className={`px-3 py-1.5 rounded-full border ${
+                        active
+                          ? 'bg-primary border-primary'
+                          : 'bg-muted border-border'
+                      }`}
+                      onPress={() => setSelectedBatchFilter(batch.id)}
+                    >
+                      <Text
+                        className={`text-xs font-semibold ${
+                          active ? 'text-primary-foreground' : 'text-foreground'
+                        }`}
+                      >
+                        {batch.label} ({count})
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+
           {/* Pending Tasks */}
           <View className="px-4">
             {pending.map((rule) => (
@@ -310,7 +424,10 @@ export default function DayListScreen() {
                 title={rule.title}
                 kind={rule.kind}
                 checked={false}
-                onToggle={() => toggle(rule.id, date)}
+                onToggle={() => toggle(rule, date)}
+                timesPerDay={rule.timesPerDay}
+                completedInstances={getCompletedInstances(rule.id, date)}
+                onToggleInstance={(idx) => toggleInstance(rule.id, date, idx)}
               />
             ))}
 
@@ -346,7 +463,10 @@ export default function DayListScreen() {
                     title={rule.title}
                     kind={rule.kind}
                     checked
-                    onToggle={() => toggle(rule.id, date)}
+                    onToggle={() => toggle(rule, date)}
+                    timesPerDay={rule.timesPerDay}
+                    completedInstances={getCompletedInstances(rule.id, date)}
+                    onToggleInstance={(idx) => toggleInstance(rule.id, date, idx)}
                   />
                 ))}
               </View>
@@ -412,18 +532,33 @@ export default function DayListScreen() {
                 }, 150);
               }}
             />
-            <TouchableOpacity
-              className={`bg-primary mt-2 px-4 py-2.5 rounded-xl ${
-                !noteText.trim() ? 'opacity-50' : ''
-              }`}
-              activeOpacity={0.7}
-              disabled={!noteText.trim()}
-              onPress={() => (editingNoteId ? handleSaveEdit(editingNoteId) : handleAddNote())}
-            >
-              <Text className="text-primary-foreground text-sm font-semibold text-center">
-                {editingNoteId ? 'Save note' : 'Add note'}
-              </Text>
-            </TouchableOpacity>
+            <View className="flex-row items-center gap-2 mt-2">
+              <TouchableOpacity
+                className={`flex-1 bg-primary px-4 py-2.5 rounded-xl items-center ${
+                  !noteText.trim() ? 'opacity-50' : ''
+                }`}
+                activeOpacity={0.7}
+                disabled={!noteText.trim()}
+                onPress={() => (editingNoteId ? handleSaveEdit(editingNoteId) : handleAddNote())}
+              >
+                <Text className="text-primary-foreground text-sm font-semibold text-center">
+                  {editingNoteId ? 'Save note' : 'Add note'}
+                </Text>
+              </TouchableOpacity>
+              {editingNoteId && (
+                <TouchableOpacity
+                  className="px-3 py-2.5 rounded-xl bg-muted flex-row items-center gap-1.5"
+                  onPress={() => {
+                    setEditingNoteId(null);
+                    setNoteText('');
+                  }}
+                  accessibilityLabel="Cancel editing"
+                >
+                  <XIcon size={14} color={isDark ? '#f5f5f5' : '#1a1a1a'} weight="bold" />
+                  <Text className="text-muted-foreground text-xs font-semibold">Cancel</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             {notes.length === 0 ? (
               <View className="rounded-xl border border-dashed border-border bg-card px-4 py-4 mt-3 items-center">
                 <Text className="text-muted-foreground text-sm text-center">

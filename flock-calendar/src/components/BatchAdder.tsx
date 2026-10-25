@@ -3,7 +3,7 @@ import Screen from '@/components/Screen';
 import { useTheme } from '@/context/ThemeContext';
 import { generateFlock, type SetupAnswers } from '@/schedule/build';
 import { loadFlock, saveFlock, type Batch } from '@/storage/store';
-import { ArrowLeftIcon } from 'phosphor-react-native';
+import { XIcon } from 'phosphor-react-native';
 import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -80,11 +80,11 @@ export default function BatchAdder({ onDone }: Props) {
     <Screen>
       <View className="flex-row items-center justify-between px-5 pt-2 pb-3">
         <TouchableOpacity
-          accessibilityLabel="Back"
+          accessibilityLabel="Cancel"
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={onDone}
         >
-          <ArrowLeftIcon weight="bold" size={18} color={theme === 'dark' ? '#f5f5f5' : '#1a1a1a'} />
+          <XIcon weight="bold" size={18} color={theme === 'dark' ? '#f5f5f5' : '#1a1a1a'} />
         </TouchableOpacity>
         <Text className="text-foreground font-bold">Add batch</Text>
         <View className="w-10 h-10" />

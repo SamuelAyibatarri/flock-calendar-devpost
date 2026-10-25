@@ -2,10 +2,10 @@ import { useTheme } from '@/context/ThemeContext';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { formatShort, todayIso } from '@/lib/date';
 import { addDays } from '@/schedule/rules';
-import { askFlockAi, type AiConsultationResult } from '@/services/ai';
+import { askFlockAi, getApiKeyStatus, type AiConsultationResult } from '@/services/ai';
 import { addMultipleRules, type Batch, type Rule } from '@/storage/store';
 import { CalendarPlusIcon, CheckCircleIcon, PillIcon, SparkleIcon, XIcon } from 'phosphor-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -52,6 +52,18 @@ export default function FlockAiModal({
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AiConsultationResult | null>(null);
   const [added, setAdded] = useState(false);
+  const [keyStatus, setKeyStatus] = useState<{ hasKey: boolean; isCustom: boolean }>({
+    hasKey: false,
+    isCustom: false,
+  });
+
+  useEffect(() => {
+    if (visible) {
+      getApiKeyStatus().then((s) => {
+        setKeyStatus({ hasKey: s.hasKey, isCustom: s.isCustom });
+      });
+    }
+  }, [visible]);
 
   const handleAsk = async (textToAsk?: string) => {
     const q = (textToAsk ?? query).trim();
@@ -140,7 +152,13 @@ export default function FlockAiModal({
                   </Text>
                   <View className="rounded px-1.5 py-0.5 bg-secondary/20">
                     <Text className="text-secondary-foreground text-[10px] font-bold">
-                      {result?.source === 'gemini' ? 'Gemini 3.5' : 'Vet Advisor'}
+                      {result?.source === 'gemini'
+                        ? 'Gemini 3.5'
+                        : result?.source === 'offline_expert'
+                        ? 'Offline Vet'
+                        : keyStatus.hasKey
+                        ? 'Gemini Ready'
+                        : 'Offline Mode'}
                     </Text>
                   </View>
                 </View>
@@ -162,6 +180,15 @@ export default function FlockAiModal({
             className="my-3"
             contentContainerStyle={{ paddingBottom: 20 }}
           >
+            {/* Offline Mode Info Banner if no key */}
+            {!keyStatus.hasKey && (
+              <View className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 mb-3 flex-row items-center gap-2">
+                <SparkleIcon size={14} color="#f59e0b" weight="fill" />
+                <Text className="text-foreground text-xs flex-1 leading-relaxed">
+                  <Text className="font-semibold">Offline Expert Mode:</Text> No Gemini API key provided. Using built-in veterinary rule engine. (Add your key in Settings for live AI).
+                </Text>
+              </View>
+            )}
             {/* Prompt Chips */}
             {!result && !loading && (
               <View className="mb-4">
@@ -288,6 +315,15 @@ export default function FlockAiModal({
                     </TouchableOpacity>
                   </View>
                 )}
+
+                {/* Veterinary & AI Disclaimer */}
+                <View className="rounded-xl border border-border bg-muted/40 p-3 mt-3">
+                  <Text className="text-muted-foreground text-xs leading-relaxed">
+                    {result.source === 'gemini'
+                      ? '⚠️ Powered by Google Gemini AI. AI can make mistakes — always verify critical dosage calculations with a veterinarian or poultry specialist.'
+                      : '📋 Powered by offline poultry care standards. Recommendations are for operational guidance — consult your local veterinarian for severe disease symptoms.'}
+                  </Text>
+                </View>
               </View>
             )}
           </ScrollView>

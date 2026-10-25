@@ -3,8 +3,8 @@ import Screen from '@/components/Screen';
 import { useTheme } from '@/context/ThemeContext';
 import { formatShort, todayIso } from '@/lib/date';
 import { addDays } from '@/schedule/rules';
-import { loadFlock, saveFlock, type Rule } from '@/storage/store';
-import { ArrowLeftIcon } from 'phosphor-react-native';
+import { loadFlock, saveFlock, type Batch, type Rule } from '@/storage/store';
+import { XIcon } from 'phosphor-react-native';
 import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -12,6 +12,7 @@ type Props = {
   batchId: string;
   initialDate?: string;
   onDone: () => void;
+  batches?: Batch[];
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -20,8 +21,10 @@ export default function CustomTaskAdder({
   batchId,
   initialDate,
   onDone,
+  batches = [],
 }: Props) {
   const { theme } = useTheme();
+  const [currentBatchId, setCurrentBatchId] = useState(batchId);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(initialDate ?? todayIso());
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +53,7 @@ export default function CustomTaskAdder({
     const data = await loadFlock();
     const newRule: Rule = {
       id: `rule-${Date.now()}`,
-      batchId,
+      batchId: currentBatchId,
       kind: 'custom',
       title: title.trim(),
       dueDate: date,
@@ -68,11 +71,11 @@ export default function CustomTaskAdder({
     <Screen>
       <View className="flex-row items-center justify-between px-5 pt-2 pb-3">
         <TouchableOpacity
-          accessibilityLabel="Back"
+          accessibilityLabel="Cancel"
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={onDone}
         >
-          <ArrowLeftIcon weight="bold" size={18} color={theme === 'dark' ? '#f5f5f5' : '#1a1a1a'} />
+          <XIcon weight="bold" size={18} color={theme === 'dark' ? '#f5f5f5' : '#1a1a1a'} />
         </TouchableOpacity>
         <Text className="text-foreground font-bold">Add task</Text>
         <View className="w-10 h-10" />
@@ -91,6 +94,44 @@ export default function CustomTaskAdder({
           <Text className="text-muted-foreground text-sm mt-1">
             For anything the standard schedule does not cover.
           </Text>
+
+          {batches.length > 1 && (
+            <View className="mt-4">
+              <Text className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2">
+                Select Batch
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 8 }}
+              >
+                {batches.map((batch) => {
+                  const active = batch.id === currentBatchId;
+                  return (
+                    <TouchableOpacity
+                      key={batch.id}
+                      className={`px-3.5 py-1.5 rounded-full border ${
+                        active
+                          ? 'bg-primary border-primary'
+                          : 'bg-muted border-border'
+                      }`}
+                      onPress={() => setCurrentBatchId(batch.id)}
+                    >
+                      <Text
+                        className={`text-xs font-semibold ${
+                          active
+                            ? 'text-primary-foreground'
+                            : 'text-foreground'
+                        }`}
+                      >
+                        {batch.label} ({batch.birdCount} birds)
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
         </View>
 
         <View className="mx-4 rounded-3xl border border-border bg-card p-4">

@@ -35,6 +35,7 @@ export type Completion = {
   ruleId: string;
   date: string; // ISO date
   doneAt: string; // ISO timestamp
+  instanceIndex?: number; // 0-based index for multi-time tasks (e.g. 0, 1, 2 for 3x)
 };
 
 export type Note = {

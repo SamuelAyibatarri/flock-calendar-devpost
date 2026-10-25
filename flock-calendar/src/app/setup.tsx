@@ -8,7 +8,11 @@ import { ArrowLeftIcon } from 'phosphor-react-native';
 import { useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-export default function SetupScreen() {
+type Props = {
+  onDone?: () => void;
+};
+
+export default function SetupScreen({ onDone }: Props = {}) {
   const router = useRouter();
   const { theme } = useTheme();
   const [birdCount, setBirdCount] = useState('10');
@@ -46,17 +50,27 @@ export default function SetupScreen() {
 
     setError(null);
     setSaving(true);
-    const answers: SetupAnswers = {
-      birdType: 'layers',
-      caretakerSchedule,
-      birdCount: bc,
-      birdAgeDays: age,
-      checkupsPerDay: cp,
-      feedingsPerDay: fp,
-    };
-    const { batches, rules } = generateFlock(answers);
-    await saveFlock({ batches, rules, completions: [], notes: [] });
-    router.replace('/');
+    try {
+      const answers: SetupAnswers = {
+        birdType: 'layers',
+        caretakerSchedule,
+        birdCount: bc,
+        birdAgeDays: age,
+        checkupsPerDay: cp,
+        feedingsPerDay: fp,
+      };
+      const { batches, rules } = generateFlock(answers);
+      await saveFlock({ batches, rules, completions: [], notes: [] });
+      if (onDone) {
+        onDone();
+      } else {
+        router.replace('/');
+      }
+    } catch {
+      setError('Failed to save flock schedule. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const canGoBack = router.canGoBack();
