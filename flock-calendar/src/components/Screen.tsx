@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { NavigationBar } from 'expo-navigation-bar';
 
 type Props = {
   children: ReactNode;
@@ -14,16 +15,20 @@ export default function Screen({ children, edges = 'both' }: Props) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const bgColor = isDark ? '#141414' : '#ffffff';
 
   return (
     <View
       className="flex-1 bg-background"
       style={{
+        flex: 1,
+        backgroundColor: bgColor,
         paddingTop: insets.top,
         paddingBottom: edges === 'both' ? insets.bottom : 0,
       }}
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <NavigationBar style={isDark ? 'light' : 'dark'} />
       {children}
     </View>
   );

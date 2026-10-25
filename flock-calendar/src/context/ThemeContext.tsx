@@ -2,6 +2,7 @@ import { createContext, useContext, useCallback, ReactNode, useState, useEffect 
 import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
 import { useColorScheme as useRNColorScheme, ColorSchemeName, Platform, Appearance } from 'react-native';
 import * as SystemUI from 'expo-system-ui';
+import { setStyle as setNavigationBarStyle } from 'expo-navigation-bar';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -25,6 +26,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const isDark = theme === 'dark';
     if (Platform.OS === 'android') {
       SystemUI.setBackgroundColorAsync(isDark ? '#141414' : '#ffffff').catch(() => {});
+      try {
+        setNavigationBarStyle(isDark ? 'light' : 'dark');
+      } catch {}
     }
   }, [theme]);
 
