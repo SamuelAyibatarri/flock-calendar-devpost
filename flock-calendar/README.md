@@ -37,14 +37,24 @@ Built for **Monday Samuel Chidera** (80+ layers across multiple batches at diffe
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started & Testing
 
-### Prerequisites
-* [Bun](https://bun.sh/)
-* Android SDK or physical Android device connected via ADB
+There are three ways to try out and build Flock Calendar:
 
-### Installation & Running Locally
+### 1. 📱 Direct APK Download (Fastest — Zero Setup)
+Download the standalone Android `.apk` directly from the [GitHub Releases](https://github.com/SamuelAyibatarri/flock-calendar-devpost/releases) page and install it on any physical Android device. No development environment or build steps required.
 
+---
+
+### 2. 💻 Local Development Build (Expo & Native Android)
+If you want to run or inspect the code locally:
+
+#### Prerequisites
+* [Bun](https://bun.sh/) package manager
+* Android Studio, Android SDK (`platform-tools`, `build-tools`), and Java JDK / Gradle configured for your OS (Linux, macOS, or Windows)
+* An Android emulator or a physical Android device connected via USB debugging (`adb devices`)
+
+#### Steps
 1. Clone the repository:
    ```bash
    git clone https://github.com/SamuelAyibatarri/flock-calendar-devpost.git
@@ -56,25 +66,34 @@ Built for **Monday Samuel Chidera** (80+ layers across multiple batches at diffe
    bun install
    ```
 
-3. (Optional) Set your Gemini API key in `.env.local` or enter it directly in the app's Settings screen (BYOK):
+3. (Optional) Configure Gemini API key:
+   Set your key in `.env.local` or enter it directly inside the app under **Settings → Flock AI (BYOK)**:
    ```bash
    EXPO_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
    ```
+   *(If omitted, Flock AI runs in offline expert rule mode).*
 
-4. Run locally on an Android device or emulator:
+4. Compile and launch on your connected device:
    ```bash
    bun expo run:android
    ```
 
-### 📦 Building a Standalone APK (EAS Build)
+---
 
-To build a standalone installable Android APK that anyone can test without setting up the dev environment:
+### 3. ☁️ Cloud Build via EAS (Generate your own APK)
+If you prefer building a fresh installable APK in the cloud without installing local Android build tools:
 
-```bash
-cd flock-calendar
-eas build -p android --profile prototype_apk
-```
-*The resulting `.apk` can be installed directly onto any Android device.*
+1. Install EAS CLI and create a free [Expo account](https://expo.dev/) if you don't already have one:
+   ```bash
+   npm install -g eas-cli
+   eas login
+   ```
+2. Trigger the cloud APK build:
+   ```bash
+   cd flock-calendar
+   eas build -p android --profile prototype_apk
+   ```
+   > **Note for cloners**: The `projectId` is intentionally omitted from `app.json` so that anyone can build cleanly under their own Expo account. On the first run, EAS CLI will automatically prompt: *"Would you like to automatically create an EAS project?"* — select **yes**, and EAS will configure your own cloud build pipeline automatically.
 
 ---
 
