@@ -25,7 +25,7 @@ export default function Screen({ children, edges = 'both' }: Props) {
       }}
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <NavigationBar style={isDark ? 'dark' : 'light'} />
+      <NavigationBar style={isDark ? 'light' : 'dark'} />
       {children}
     </View>
   );
