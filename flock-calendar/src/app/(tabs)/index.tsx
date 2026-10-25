@@ -121,7 +121,7 @@ export default function CalendarScreen() {
   };
 
   const handleDeleteNote = async (id: string) => {
-    await Alert.alert(
+    Alert.alert(
       'Delete note',
       'Are you sure you want to delete this note?',
       [
@@ -142,7 +142,7 @@ export default function CalendarScreen() {
 
   const handleSaveEdit = async (id: string) => {
     if (!noteText.trim()) return;
-    await updateNote(id, noteText.trim(), todayIso());
+    await updateNote(id, noteText.trim());
     setNoteText('');
     setEditingNoteId(null);
     const d = await loadFlock();
@@ -232,7 +232,16 @@ export default function CalendarScreen() {
           <View className="mx-4 rounded-3xl border border-border bg-card p-4">
             <MonthCalendar
               monthAnchor={monthAnchor}
-              dueCount={(date) => dueFor(date).length}
+              dueCount={(date) => {
+                const tasks = dueFor(date);
+                return tasks.filter(
+                  (t) =>
+                    t.kind === 'vaccine' ||
+                    t.kind === 'deworm' ||
+                    t.kind === 'cleaning' ||
+                    t.kind === 'custom',
+                ).length;
+              }}
               onPrevMonth={() => setMonthOffset((o) => o - 1)}
               onNextMonth={() => setMonthOffset((o) => o + 1)}
               onSelectDate={(date) => router.push(`/day/${date}`)}
@@ -244,7 +253,7 @@ export default function CalendarScreen() {
               <Text className="text-foreground font-bold text-base">Today</Text>
               <TouchableOpacity onPress={() => router.push(`/day/${today}`)}>
                 <Text
-                  className="text-xs font-semibold text-['#e6b800']"
+                  className="text-xs font-semibold text-secondary"
                   style={{ textDecorationLine: 'underline' }}
                 >
                   Open day

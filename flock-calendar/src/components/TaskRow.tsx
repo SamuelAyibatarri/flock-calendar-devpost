@@ -10,17 +10,17 @@ type Props = {
   onToggle: () => void;
 };
 
-const KindIcon = ({ kind, color }: { kind: RuleKind; color: string }) => {
+const KindIcon = ({ kind, color }: { kind: RuleKind; color: string}) => {
   switch (kind) {
-    case 'checkup': return <HeartbeatIcon size={18} color={color} weight="fill" />;
-    case 'feed': return <PlantIcon size={18} color={color} weight="fill" />;
-    case 'water': return <DropIcon size={18} color={color} weight="fill" />;
-    case 'eggs': return <EggIcon size={18} color={color} weight="fill" />;
-    case 'cleaning': return <BroomIcon size={18} color={color} weight="fill" />;
-    case 'vaccine': return <SyringeIcon size={18} color={color} weight="fill" />;
-    case 'deworm': return <BugIcon size={18} color={color} weight="fill" />;
+    case 'checkup': return <HeartbeatIcon size={18} color={"red"} weight="duotone" />;
+    case 'feed': return <PlantIcon size={18} color={"green"} weight="duotone" />;
+    case 'water': return <DropIcon size={18} color={"blue"} weight="duotone" />;
+    case 'eggs': return <EggIcon size={18} color={"brown"} weight="duotone" />;
+    case 'cleaning': return <BroomIcon size={18} color={"brown"} weight="duotone" />;
+    case 'vaccine': return <SyringeIcon size={18} color={"skyblue"} weight="duotone" />;
+    case 'deworm': return <BugIcon size={18} color={"green"} weight="duotone" />;
     case 'custom':
-    default: return <PushPinIcon size={18} color={color} weight="fill" />;
+    default: return <PushPinIcon size={18} color={color} weight="duotone" />;
   }
 };
 

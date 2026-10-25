@@ -3,7 +3,7 @@ import Screen from '@/components/Screen';
 import { useTheme } from '@/context/ThemeContext';
 import { loadFlock, type Batch } from '@/storage/store';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { ArrowLeftIcon, PlusIcon } from 'phosphor-react-native';
+import { ArrowLeftIcon, ArrowRightIcon, PlusIcon } from 'phosphor-react-native';
 import { useCallback, useState } from 'react';
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -138,7 +138,7 @@ export default function SettingsScreen() {
             onPress={handleReset}
           >
             <Text className="text-foreground text-sm">Run Setup Questionnaire Again</Text>
-            <Text className="text-muted-foreground text-xs">Re-configure →</Text>
+            <Text className="text-muted-foreground text-xs">Re-configure <ArrowRightIcon weight='bold' size={8} /></Text>
           </TouchableOpacity>
         </View>
 

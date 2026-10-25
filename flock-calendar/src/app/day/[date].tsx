@@ -134,7 +134,7 @@ export default function DayListScreen() {
 
   const handleSaveEdit = async (id: string) => {
     if (!noteText.trim()) return;
-    await updateNote(id, noteText.trim(), date);
+    await updateNote(id, noteText.trim());
     setNoteText('');
     setEditingNoteId(null);
     const d = await loadFlock();

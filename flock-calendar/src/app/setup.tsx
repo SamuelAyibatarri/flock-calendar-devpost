@@ -1,5 +1,6 @@
 import Field from '@/components/Field';
 import Screen from '@/components/Screen';
+import { useTheme } from '@/context/ThemeContext';
 import { generateFlock, type SetupAnswers } from '@/schedule/build';
 import { saveFlock } from '@/storage/store';
 import { useRouter } from 'expo-router';
@@ -9,6 +10,7 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function SetupScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const [birdCount, setBirdCount] = useState('10');
   const [birdAgeDays, setBirdAgeDays] = useState('30');
   const [checkupsPerDay, setCheckupsPerDay] = useState('3');
@@ -74,7 +76,7 @@ export default function SetupScreen() {
               className="w-10 h-10 rounded-full bg-muted items-center justify-center"
               onPress={() => router.back()}
             >
-              <ArrowLeftIcon weight="fill" size={18} color="#1a1a1a" />
+              <ArrowLeftIcon weight="bold" size={18} color={theme === 'dark' ? '#f5f5f5' : '#1a1a1a'} />
             </TouchableOpacity>
           ) : (
             <View className="w-10 h-10" />

@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { ArrowLeft } from 'phosphor-react-native';
-import { saveFlock, loadFlock, type Rule } from '@/storage/store';
-import { addDays } from '@/schedule/rules';
-import { formatShort, todayIso } from '@/lib/date';
 import Field from '@/components/Field';
 import Screen from '@/components/Screen';
+import { useTheme } from '@/context/ThemeContext';
+import { formatShort, todayIso } from '@/lib/date';
+import { addDays } from '@/schedule/rules';
+import { loadFlock, saveFlock, type Rule } from '@/storage/store';
+import { ArrowLeftIcon } from 'phosphor-react-native';
+import { useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
   batchId: string;
@@ -20,6 +21,7 @@ export default function CustomTaskAdder({
   initialDate,
   onDone,
 }: Props) {
+  const { theme } = useTheme();
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(initialDate ?? todayIso());
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +72,7 @@ export default function CustomTaskAdder({
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={onDone}
         >
-          <ArrowLeft weight="fill" size={18} color="#1a1a1a" />
+          <ArrowLeftIcon weight="bold" size={18} color={theme === 'dark' ? '#f5f5f5' : '#1a1a1a'} />
         </TouchableOpacity>
         <Text className="text-foreground font-bold">Add task</Text>
         <View className="w-10 h-10" />

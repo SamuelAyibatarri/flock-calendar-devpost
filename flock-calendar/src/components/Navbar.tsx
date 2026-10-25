@@ -101,16 +101,11 @@ export function CustomTabBar() {
         {/* Add task button - circular outline, same row as pill */}
         <Pressable
           accessibilityLabel="Add care task"
+          className="rounded-full bg-secondary items-center justify-center border border-secondary"
           style={{
             width: ICON_SIZE,
             height: ICON_SIZE,
-            borderRadius: ICON_SIZE / 2,
-            borderWidth: 1.5,
-            borderColor: '#e6b800',
-            backgroundColor: '#e6b800',
-            alignItems: 'center',
-            justifyContent: 'center',
-          } as ViewStyle}
+          }}
           onPress={() => router.push('/add-task')}
         >
           <PlusIcon size={18} color="#1a1a1a" weight="bold" />

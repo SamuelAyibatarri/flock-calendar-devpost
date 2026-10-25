@@ -1,16 +1,18 @@
-import { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { ArrowLeft } from 'phosphor-react-native';
-import { saveFlock, loadFlock, type Batch } from '@/storage/store';
-import { generateFlock, type SetupAnswers } from '@/schedule/build';
 import Field from '@/components/Field';
 import Screen from '@/components/Screen';
+import { useTheme } from '@/context/ThemeContext';
+import { generateFlock, type SetupAnswers } from '@/schedule/build';
+import { loadFlock, saveFlock, type Batch } from '@/storage/store';
+import { ArrowLeftIcon } from 'phosphor-react-native';
+import { useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
   onDone: () => void;
 };
 
 export default function BatchAdder({ onDone }: Props) {
+  const { theme } = useTheme();
   const [birdCount, setBirdCount] = useState('10');
   const [birdAgeDays, setBirdAgeDays] = useState('0');
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +84,7 @@ export default function BatchAdder({ onDone }: Props) {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={onDone}
         >
-          <ArrowLeft weight="fill" size={18} color="#1a1a1a" />
+          <ArrowLeftIcon weight="bold" size={18} color={theme === 'dark' ? '#f5f5f5' : '#1a1a1a'} />
         </TouchableOpacity>
         <Text className="text-foreground font-bold">Add batch</Text>
         <View className="w-10 h-10" />

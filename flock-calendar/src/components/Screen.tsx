@@ -13,16 +13,17 @@ type Props = {
 export default function Screen({ children, edges = 'both' }: Props) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   return (
     <View
-      className="flex-1 bg-background"
+      className={`flex-1 bg-background ${isDark ? 'dark' : ''}`}
       style={{
         paddingTop: insets.top,
         paddingBottom: edges === 'both' ? insets.bottom : 0,
       }}
     >
-      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       {children}
     </View>
   );
