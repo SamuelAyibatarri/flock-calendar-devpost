@@ -1,22 +1,25 @@
-import { useState } from 'react';
+import { useTheme } from '@/context/ThemeContext';
+import { formatShort, todayIso } from '@/lib/date';
+import { addDays } from '@/schedule/rules';
+import { askFlockAi, type AiConsultationResult } from '@/services/ai';
+import { addMultipleRules, type Batch, type Rule } from '@/storage/store';
+import { CalendarPlusIcon, CheckCircleIcon, PillIcon, SparkleIcon, XIcon } from 'phosphor-react-native';
+import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  LayoutAnimation,
   Modal,
-  View,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
+  View,
 } from 'react-native';
-import { SparkleIcon, XIcon, CalendarPlusIcon, PillIcon, CheckCircleIcon } from 'phosphor-react-native';
-import { askFlockAi, type AiConsultationResult } from '@/services/ai';
-import { addMultipleRules, type Batch, type Rule } from '@/storage/store';
-import { addDays } from '@/schedule/rules';
-import { todayIso, formatShort } from '@/lib/date';
-import { useTheme } from '@/context/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   visible: boolean;
@@ -41,6 +44,33 @@ export default function FlockAiModal({
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const today = todayIso();
+  const insets = useSafeAreaInsets();
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        try {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        } catch {}
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        try {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        } catch {}
+        setKeyboardHeight(0);
+      }
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -109,9 +139,13 @@ export default function FlockAiModal({
             backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
             borderTopLeftRadius: 28,
             borderTopRightRadius: 28,
-            maxHeight: '85%',
+            maxHeight: keyboardHeight > 0 ? '58%' : '85%',
+            marginBottom:
+              Platform.OS === 'android'
+                ? (keyboardHeight > 0 ? keyboardHeight : Math.max(insets.bottom, 16) + 12)
+                : Math.max(insets.bottom, 16) + 12,
           }}
-          className="p-5 pb-8 border-t border-border"
+          className="p-5 pb-6 border-t border-border"
         >
           {/* Header */}
           <View className="flex-row items-center justify-between pb-3 border-b border-border">
