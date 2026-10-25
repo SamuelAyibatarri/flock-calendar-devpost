@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, ReactNode, useState, useEffect } from 'react';
 import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
-import { useColorScheme as useRNColorScheme, ColorSchemeName, Platform } from 'react-native';
+import { useColorScheme as useRNColorScheme, ColorSchemeName, Platform, Appearance } from 'react-native';
 import * as SystemUI from 'expo-system-ui';
 
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -31,6 +31,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setMode = useCallback((newMode: ThemeMode) => {
     setModeState(newMode);
     setColorScheme(newMode);
+    try {
+      Appearance.setColorScheme(newMode === 'system' ? 'auto' : newMode);
+    } catch {}
   }, [setColorScheme]);
 
   return (
