@@ -13,7 +13,6 @@ export type SetupAnswers = {
 let nextRuleId = 0;
 const nextId = () => `rule-${++nextRuleId}`;
 
-/** Turn setup answers + the standard schedule into batches + care rules. */
 export function generateFlock(answers: SetupAnswers): {
   batches: Batch[];
   rules: Rule[];
@@ -30,11 +29,28 @@ export function generateFlock(answers: SetupAnswers): {
     hatchDate: hatchDateISO,
   };
 
-  const rules: Rule[] = STANDARD_LAYER_RULES.map((std) => ({
-    id: nextId(),
-    batchId: batch.id,
-    ...std,
-  }));
+  const rules: Rule[] = STANDARD_LAYER_RULES.map((std) => {
+    let timesPerDay = std.timesPerDay;
+    
+    if (std.kind === 'feed' && answers.feedingsPerDay) {
+      timesPerDay = answers.feedingsPerDay;
+    }
+    if (std.kind === 'checkup' && answers.checkupsPerDay) {
+      timesPerDay = answers.checkupsPerDay;
+    }
+
+    const ruleTitle = timesPerDay && timesPerDay > 1 
+      ? `${std.title} (${timesPerDay}x)` 
+      : std.title;
+
+    return {
+      id: nextId(),
+      batchId: batch.id,
+      ...std,
+      title: ruleTitle,
+      timesPerDay
+    };
+  });
 
   return { batches: [batch], rules };
 }

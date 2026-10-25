@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { useColorScheme, ColorSchemeName } from 'react-native';
+import { createContext, useContext, useCallback, ReactNode, useState } from 'react';
+import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
+import { useColorScheme as useRNColorScheme, ColorSchemeName } from 'react-native';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -12,18 +13,20 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>('system');
-  const systemScheme = useColorScheme();
+  const { colorScheme, setColorScheme } = useNativeWindColorScheme();
+  const systemScheme = useRNColorScheme();
+  const [mode, setModeState] = useState<ThemeMode>('system');
 
   const theme: ColorSchemeName =
-    mode === 'system' ? (systemScheme ?? 'light') : mode;
+    mode === 'system' ? (colorScheme ?? systemScheme ?? 'light') : mode;
 
-  const setThemeMode = useCallback((newMode: ThemeMode) => {
-    setMode(newMode);
-  }, []);
+  const setMode = useCallback((newMode: ThemeMode) => {
+    setModeState(newMode);
+    setColorScheme(newMode);
+  }, [setColorScheme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, mode, setMode: setThemeMode }}>
+    <ThemeContext.Provider value={{ theme, mode, setMode }}>
       {children}
     </ThemeContext.Provider>
   );

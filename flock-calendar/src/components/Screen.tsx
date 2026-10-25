@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +12,8 @@ type Props = {
 
 export default function Screen({ children, edges = 'both' }: Props) {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+
   return (
     <View
       className="flex-1 bg-background"
@@ -19,7 +22,7 @@ export default function Screen({ children, edges = 'both' }: Props) {
         paddingBottom: edges === 'both' ? insets.bottom : 0,
       }}
     >
-      <StatusBar style="dark" />
+      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
       {children}
     </View>
   );

@@ -6,23 +6,24 @@ import TaskRow from '@/components/TaskRow';
 import { formatShort, todayIso } from '@/lib/date';
 import { isRuleDueOn } from '@/schedule/rules';
 import {
-  loadFlock,
-  saveFlock,
   addNote,
   deleteNote,
-  updateNote,
   getNotesForDate,
+  loadFlock,
+  saveFlock,
+  updateNote,
   type Batch,
   type Completion,
   type FlockData,
   type Note,
   type Rule,
 } from '@/storage/store';
-import { useRouter } from 'expo-router';
-import { Alert } from 'react-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { PlusIcon, TrashIcon } from 'phosphor-react-native';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -30,9 +31,8 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-import { TrashIcon } from 'phosphor-react-native';
 
 const NO_BATCHES: Batch[] = [];
 const NO_RULES: Rule[] = [];
@@ -50,7 +50,7 @@ export default function CalendarScreen() {
   const [noteText, setNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const reload = useCallback(() => {
     loadFlock().then((d) => {
       setData(d);
       setCompletions(d.completions);
@@ -58,6 +58,12 @@ export default function CalendarScreen() {
       setLoading(false);
     });
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload]),
+  );
 
   const batches = data?.batches ?? NO_BATCHES;
   const rules = data?.rules ?? NO_RULES;
@@ -82,6 +88,15 @@ export default function CalendarScreen() {
     [completions],
   );
 
+    const today = todayIso();
+  const todayTasks = useMemo(() => dueFor(today), [dueFor, today]);
+  const pendingToday = useMemo(() => 
+    todayTasks.filter((r) => !isDone(r.id, today)), 
+  [todayTasks, isDone, today]);
+  const doneToday = useMemo(() => 
+    todayTasks.filter((r) => isDone(r.id, today)), 
+  [todayTasks, isDone, today]);
+
   const toggle = (ruleId: string, date: string) => {
     if (!data) return;
     const done = completions.some(
@@ -94,14 +109,6 @@ export default function CalendarScreen() {
       : [...completions, { ruleId, date, doneAt: new Date().toISOString() }];
     setCompletions(updated);
     saveFlock({ ...data, completions: updated });
-  };
-
-  const reload = () => {
-    loadFlock().then((d) => {
-      setData(d);
-      setCompletions(d.completions);
-      setNotes(getNotesForDate(d.notes, todayIso()));
-    });
   };
 
   const handleAddNote = async () => {
@@ -168,10 +175,7 @@ export default function CalendarScreen() {
     );
   }
 
-  const today = todayIso();
-  const todayTasks = dueFor(today);
-  const pendingToday = todayTasks.filter((r) => !isDone(r.id, today));
-  const doneToday = todayTasks.filter((r) => isDone(r.id, today));
+
   const totalBirds = batches.reduce((sum, b) => sum + b.birdCount, 0);
 
   const now = new Date();
@@ -202,6 +206,17 @@ export default function CalendarScreen() {
             </Text>
           </View>
         </View>
+
+        <TouchableOpacity
+          className="rounded-full bg-secondary px-3 py-1.5 flex-row items-center gap-1"
+          activeOpacity={0.8}
+          onPress={() => setAddBatchOpen(true)}
+        >
+          <PlusIcon size={14} color="#1a1a1a" weight="bold" />
+          <Text className="text-secondary-foreground text-xs font-bold">
+            Add batch
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView

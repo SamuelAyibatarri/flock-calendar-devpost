@@ -38,20 +38,26 @@ export function isRuleDueOn(
     return date === rule.dueDate;
   }
 
-  // Multi-day task starting at startOffsetDays
-  if (rule.startOffsetDays !== undefined) {
-    const start = rule.startOffsetDays;
-    const end = rule.durationDays !== undefined ? start + rule.durationDays - 1 : start;
-    if (offset >= start && offset <= end) return true;
-    // A task with only startOffsetDays (no duration, no interval) is a one-off
-    if (rule.intervalDays === undefined && rule.durationDays === undefined) {
-      return offset === start;
-    }
+  // Multi-day recurring task (e.g. deworming every 60 days across 3 days)
+  if (rule.intervalDays !== undefined && rule.durationDays !== undefined) {
+    const start = rule.startOffsetDays ?? 0;
+    if (offset < start) return false;
+    const cycle = (offset - start) % rule.intervalDays;
+    return cycle >= 0 && cycle < rule.durationDays;
   }
 
-  // Recurring interval from hatch date
+  // Multi-day one-off task starting at startOffsetDays
+  if (rule.startOffsetDays !== undefined && rule.intervalDays === undefined) {
+    const start = rule.startOffsetDays;
+    const end = rule.durationDays !== undefined ? start + rule.durationDays - 1 : start;
+    return offset >= start && offset <= end;
+  }
+
+  // Recurring interval from hatch date (with optional startOffsetDays)
   if (rule.intervalDays !== undefined) {
-    return offset % rule.intervalDays === 0;
+    const start = rule.startOffsetDays ?? 0;
+    if (offset < start) return false;
+    return (offset - start) % rule.intervalDays === 0;
   }
 
   return false;

@@ -1,4 +1,5 @@
 import { dateParts, formatMonth, isoDate, todayIso } from '@/lib/date';
+import { useTheme } from '@/context/ThemeContext';
 import { CaretLeftIcon, CaretRightIcon } from 'phosphor-react-native';
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -36,6 +37,8 @@ export default function MonthCalendar({
   }
 
   const today = todayIso();
+  const { theme } = useTheme();
+  const iconColor = theme === 'dark' ? '#f5f5f5' : '#1a1a1a';
 
   return (
     <View>
@@ -45,7 +48,7 @@ export default function MonthCalendar({
           className="w-9 h-9 rounded-full bg-muted items-center justify-center"
           onPress={onPrevMonth}
         >
-          <Text className="text-foreground text-base"><CaretLeftIcon size={16}/></Text>
+          <CaretLeftIcon size={16} color={iconColor} />
         </TouchableOpacity>
 
         <Text className="text-foreground font-bold text-base">
@@ -57,7 +60,7 @@ export default function MonthCalendar({
           className="w-9 h-9 rounded-full bg-muted items-center justify-center"
           onPress={onNextMonth}
         >
-          <Text className="text-foreground text-base">< CaretRightIcon size={16} /></Text>
+          <CaretRightIcon size={16} color={iconColor} />
         </TouchableOpacity>
       </View>
 

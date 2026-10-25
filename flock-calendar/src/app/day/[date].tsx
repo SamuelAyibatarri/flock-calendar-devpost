@@ -1,30 +1,27 @@
 import Screen from '@/components/Screen';
 import TaskRow from '@/components/TaskRow';
+import { useTheme } from '@/context/ThemeContext';
 import { formatLong, formatShort, todayIso } from '@/lib/date';
-import { isRuleDueOn } from '@/schedule/rules';
+import { addDays, isRuleDueOn } from '@/schedule/rules';
 import {
-  loadFlock,
-  saveFlock,
   addNote,
   deleteNote,
-  updateNote,
   getNotesForDate,
+  loadFlock,
+  saveFlock,
+  updateNote,
   type Batch,
   type Completion,
   type FlockData,
   type Note,
   type Rule,
 } from '@/storage/store';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from 'phosphor-react-native';
-import { Alert } from 'react-native';
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -42,6 +39,7 @@ const NO_NOTES: Note[] = [];
 export default function DayListScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const { theme } = useTheme();
   const date = typeof params.date === 'string' ? params.date : todayIso();
 
   const [data, setData] = useState<FlockData | null>(null);
@@ -51,7 +49,7 @@ export default function DayListScreen() {
   const [noteText, setNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const reload = useCallback(() => {
     loadFlock().then((d) => {
       setData(d);
       setCompletions(d.completions);
@@ -59,6 +57,12 @@ export default function DayListScreen() {
       setLoading(false);
     });
   }, [date]);
+
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload]),
+  );
 
   const batches = data?.batches ?? NO_BATCHES;
   const rules = data?.rules ?? NO_RULES;
@@ -105,16 +109,20 @@ export default function DayListScreen() {
   };
 
   const handleDeleteNote = async (id: string) => {
-    await Alert.alert(
+    Alert.alert(
       'Delete note',
       'Are you sure you want to delete this note?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: async () => {
-          await deleteNote(id);
-          const d = await loadFlock();
-          setNotes(getNotesForDate(d.notes, date));
-        } },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteNote(id);
+            const d = await loadFlock();
+            setNotes(getNotesForDate(d.notes, date));
+          },
+        },
       ],
     );
   };
@@ -132,6 +140,30 @@ export default function DayListScreen() {
     const d = await loadFlock();
     setNotes(getNotesForDate(d.notes, date));
   };
+
+  const today = todayIso();
+  const selectedTasks = useMemo(() => dueFor(date), [dueFor, date]);
+  const pending = useMemo(
+    () => selectedTasks.filter((r) => !isDone(r.id, date)),
+    [selectedTasks, isDone, date],
+  );
+  const done = useMemo(
+    () => selectedTasks.filter((r) => isDone(r.id, date)),
+    [selectedTasks, isDone, date],
+  );
+  const isToday = date === today;
+
+  // Next 7 upcoming days
+  const upcomingDays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = addDays(date, i + 1);
+      const tasks = dueFor(d);
+      return {
+        date: d,
+        tasks,
+      };
+    });
+  }, [date, dueFor]);
 
   if (loading) {
     return (
@@ -153,12 +185,6 @@ export default function DayListScreen() {
     );
   }
 
-  const today = todayIso();
-  const selectedTasks = dueFor(date);
-  const pending = selectedTasks.filter((r) => !isDone(r.id, date));
-  const done = selectedTasks.filter((r) => isDone(r.id, date));
-  const isToday = date === today;
-
   const addTask = () => {
     const batchId = data.batches[0]?.id;
     if (!batchId) {
@@ -168,6 +194,8 @@ export default function DayListScreen() {
     router.push(`/add-task?batchId=${batchId}&date=${date}`);
   };
 
+  const isDark = theme === 'dark';
+
   return (
     <Screen>
       <View className="flex-row items-center justify-between px-5 pt-2 pb-3">
@@ -176,7 +204,7 @@ export default function DayListScreen() {
           className="w-10 h-10 rounded-full bg-muted items-center justify-center"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
         >
-          <ArrowLeftIcon weight="bold" size={18} color="#1a1a1a" />
+          <ArrowLeftIcon weight="bold" size={18} color={isDark ? '#f5f5f5' : '#1a1a1a'} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -198,6 +226,7 @@ export default function DayListScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Header */}
           <View className="px-5 pb-4">
             <View className="flex-row items-center gap-2 mb-1">
               <Text className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
@@ -223,6 +252,7 @@ export default function DayListScreen() {
             </Text>
           </View>
 
+          {/* Pending Tasks */}
           <View className="px-4">
             {pending.map((rule) => (
               <TaskRow
@@ -273,33 +303,74 @@ export default function DayListScreen() {
             )}
           </View>
 
+          {/* Upcoming next 7 days */}
+          <View className="mx-4 mt-8">
+            <View className="mb-3">
+              <Text className="text-foreground font-bold text-base">
+                Upcoming care (next 7 days)
+              </Text>
+              <Text className="text-muted-foreground text-xs mt-0.5">
+                Look ahead across all batches
+              </Text>
+            </View>
+
+            {upcomingDays.map((up) => (
+              <TouchableOpacity
+                key={up.date}
+                className="rounded-2xl border border-border bg-card p-3 mb-2 flex-row items-center justify-between"
+                activeOpacity={0.7}
+                onPress={() => router.push(`/day/${up.date}`)}
+              >
+                <View className="flex-1">
+                  <Text className="text-foreground font-semibold text-sm">
+                    {formatLong(up.date)}
+                  </Text>
+                  <Text className="text-muted-foreground text-xs mt-0.5" numberOfLines={1}>
+                    {up.tasks.length === 0
+                      ? 'No scheduled care'
+                      : up.tasks.map((t) => t.title).slice(0, 3).join(' · ') +
+                        (up.tasks.length > 3 ? ` +${up.tasks.length - 3} more` : '')}
+                  </Text>
+                </View>
+                <View className="ml-3 items-end">
+                  <View className="rounded-full bg-muted px-2.5 py-1">
+                    <Text className="text-muted-foreground text-xs font-medium">
+                      {up.tasks.length} {up.tasks.length === 1 ? 'task' : 'tasks'}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+
           {/* Notes section per date */}
-          <View className="mx-4 mt-6">
+          <View className="mx-4 mt-8">
             <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-foreground font-bold text-base">Notes</Text>
+              <Text className="text-foreground font-bold text-base">Notes for this date</Text>
             </View>
             <TextInput
               className="border border-border rounded-lg p-3 bg-background text-foreground min-h-[80px]"
               value={noteText}
               onChangeText={setNoteText}
               placeholder={editingNoteId ? 'Edit note…' : 'Add a note for this day…'}
+              placeholderTextColor={isDark ? '#888888' : '#999999'}
               multiline
               numberOfLines={4}
             />
             <TouchableOpacity
-              className={`bg-primary mt-2 px-4 py-2 rounded-lg ${
+              className={`bg-primary mt-2 px-4 py-2.5 rounded-xl ${
                 !noteText.trim() ? 'opacity-50' : ''
               }`}
               activeOpacity={0.7}
               disabled={!noteText.trim()}
-              onPress={() => editingNoteId ? handleSaveEdit(editingNoteId) : handleAddNote()}
+              onPress={() => (editingNoteId ? handleSaveEdit(editingNoteId) : handleAddNote())}
             >
-              <Text className="text-primary-foreground text-sm font-semibold">
+              <Text className="text-primary-foreground text-sm font-semibold text-center">
                 {editingNoteId ? 'Save note' : 'Add note'}
               </Text>
             </TouchableOpacity>
             {notes.length === 0 ? (
-              <View className="rounded-xl border border-dashed border-border bg-card px-4 py-4 mt-2 items-center">
+              <View className="rounded-xl border border-dashed border-border bg-card px-4 py-4 mt-3 items-center">
                 <Text className="text-muted-foreground text-sm text-center">
                   No notes for this day yet.
                 </Text>

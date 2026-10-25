@@ -1,8 +1,7 @@
-import { Tabs, usePathname, useRouter } from 'expo-router';
+import { usePathname, useRouter, type Href } from 'expo-router';
 import { GearIcon, HouseIcon, ListIcon, PlusIcon } from 'phosphor-react-native';
 import { Pressable, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { todayIso } from '@/lib/date';
 
 const ICON_SIZE = 44;
 
@@ -36,18 +35,26 @@ function TabButton({ name, isActive, onPress }: TabButtonProps) {
   );
 }
 
-export function CustomTabBar({ state }: any) {
+type TabItem = {
+  name: string;
+  path: Href;
+};
+
+export function CustomTabBar() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
 
-  const tabs = [
-    { name: 'index', path: '/', label: 'Home' },
-    { name: 'history', path: '/history', label: 'History' },
-    { name: 'settings', path: '/settings', label: 'Settings' },
+  const tabs: TabItem[] = [
+    { name: 'index', path: '/' },
+    { name: 'history', path: '/history' },
+    { name: 'settings', path: '/settings' },
   ];
 
-  const isActive = (path: string) => pathname === path || pathname === `/(tabs)${path}`;
+  const isActive = (path: Href) => {
+    const str = typeof path === 'string' ? path : path.pathname;
+    return pathname === str || pathname === `/(tabs)${str}`;
+  };
 
   return (
     <View
@@ -86,13 +93,14 @@ export function CustomTabBar({ state }: any) {
               key={tab.name}
               name={tab.name}
               isActive={isActive(tab.path)}
-              onPress={() => router.push(tab.path as any)}
+              onPress={() => router.push(tab.path)}
             />
           ))}
         </View>
 
-        {/* Add button - circular outline, same row as pill */}
+        {/* Add task button - circular outline, same row as pill */}
         <Pressable
+          accessibilityLabel="Add care task"
           style={{
             width: ICON_SIZE,
             height: ICON_SIZE,
@@ -103,7 +111,7 @@ export function CustomTabBar({ state }: any) {
             alignItems: 'center',
             justifyContent: 'center',
           } as ViewStyle}
-          onPress={() => router.push(`/day/${todayIso()}` as any)}
+          onPress={() => router.push('/add-task')}
         >
           <PlusIcon size={18} color="#1a1a1a" weight="bold" />
         </Pressable>
@@ -113,16 +121,5 @@ export function CustomTabBar({ state }: any) {
 }
 
 export default function AppTabs() {
-  return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-      }}
-      tabBar={(props: any) => <CustomTabBar {...props} />}
-    >
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="history" />
-      <Tabs.Screen name="settings" />
-    </Tabs>
-  );
+  return null;
 }
