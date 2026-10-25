@@ -72,12 +72,27 @@ Source: `scope.md > Inspiration & Identity`; direction supplied by Monday.
 ### Adding batches and custom tasks
 - Add another batch later (bird type, count, age).
 - Add a custom task to any date.
-- [ ] Acceptance: a new batch appears with its own schedule.
-- [ ] Acceptance: a custom task appears on the chosen date.
+- [x] Acceptance: a new batch appears with its own schedule.
+- [x] Acceptance: a custom task appears on the chosen date.
+
+### Farm Notes and Routine Sharing
+- Daily notes per date (create, edit, delete).
+- One-tap sharing of daily care tasks and farm notes via WhatsApp/SMS (`Share`).
+- [x] Acceptance: notes save per date and persist across app reloads.
+- [x] Acceptance: sharing formats checklist and notes cleanly.
+
+### Flock AI — Veterinary Advisor & Dosage Calculator
+- Integrated AI Veterinary Advisor powered by Google Gemini (with resilient offline expert fallback).
+- Daily flock briefing based on flock age and layer stage.
+- Immediate medication and water dosage calculations tailored to batch bird counts.
+- One-tap calendar injection of AI-recommended recovery routines.
+- Settings support for Bring Your Own Key (BYOK) for open-source reviewers.
+- [x] Acceptance: user can ask queries or choose quick consultation chips.
+- [x] Acceptance: suggested routines inject directly into the calendar.
 
 ### History
 - A simple record of completed tasks.
-- [ ] Acceptance: a completed task appears in the history for its date.
+- [x] Acceptance: a completed task appears in the history for its date.
 
 ## States and Boundaries
 - **First use** — setup questionnaire, because nothing is configured yet.
@@ -96,26 +111,26 @@ Source: `scope.md > Inspiration & Identity`; direction supplied by Monday.
 - **Constrained inputs** — "the option shouldn't even exist to enter something that makes no sense."
 - **Eco green / lemon / yellow farm palette, bird logo, phone-first.**
 
-## What We're Building
+## What We Built
 - First-run setup questionnaire (constrained inputs).
 - Generated, editable calendar from bird age and intervals.
-- Calendar view with a day list (selected day + upcoming days).
-- Recurring daily tasks (checkup, feed, water, pick eggs) at set frequencies.
-- Cage cleaning on some days.
-- Vaccines and multi-day deworming.
+- Month calendar view with 7-day upcoming care section.
+- Recurring daily tasks (checkup, feed, water, pick eggs) and special care (vaccines, deworming, cleaning).
 - Checkbox check-off; multi-day tasks advance.
 - Add another batch; add a custom task to any date.
+- Farm notes per date (create, edit, delete).
+- One-tap routine sharing with farm attendants via WhatsApp/SMS.
+- Flock AI: Veterinary advisor, flock briefing, bird-count dosage calculator, and one-tap recovery routine calendar injection.
+- Bring Your Own Key (BYOK) Gemini API key settings.
+- Dark & Light mode theme with Android navigation bar sync.
 - A simple history of completed tasks.
-- Persistence between sessions; no account.
-- Mobile-friendly, eco farm look.
+- Offline-first local persistence between sessions without requiring accounts.
+- Native mobile app for Android and iOS.
 
 ## Deferred From the POC
-- **Notifications / reminders** — the PoC proves the schedule, not delivery.
-- **Other poultry (broilers) and other livestock** — kept out so the demo stays sharp; the schedule should be data so this is cheap later.
-- **Treatment records and notes per batch** — later.
-- **Reports and trends** — later.
-- **Native mobile app** — the PoC is mobile-friendly; a native app is later.
-- **Multi-caretaker / sharing** — not needed to prove the kernel.
+- **Scheduled background push notifications** — manual/local alerts in testing; push service deferred.
+- **Other poultry (broilers) and other livestock** — kept out so the demo stays sharp; the schedule is data-driven so this is cheap later.
+- **Financial profit & mortality tracking** — a separate management domain, deliberately deferred.
 
 ## Possible Later Enhancements
 - Notifications and reminders for due tasks.

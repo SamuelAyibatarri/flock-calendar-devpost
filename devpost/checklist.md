@@ -71,3 +71,7 @@ Reflection: offered/declined — personal answer belongs only in the ignored pro
 Activity mode: live app and editor (typecheck, mechanical verification)
 
 ## Revisions
+- **Flock AI & Veterinary Advisor**: Integrated Google Gemini 3.5 Flash Lite with resilient offline expert fallback. Added dosage calculations based on bird count, daily flock stage briefing, and 1-tap calendar injection of recovery routines.
+- **BYOK (Bring Your Own Key)**: Configurable Gemini API key input in Settings for open-source reviewers.
+- **Daily Farm Notes & Sharing**: Daily farm notes per date with full CRUD and one-tap routine sharing via WhatsApp/SMS.
+- **Dark/Light Theme & UI Polish**: Eco chicken palette with dark mode support, Android navigation bar contrast synchronization, and smooth keyboard avoidance across all text inputs.

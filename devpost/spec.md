@@ -23,20 +23,21 @@ Source: `prd.md > The Core Journey`.
 2. He's taken to the **calendar** (`src/app/index.tsx`). Each date shows how many tasks are due, computed live from the rules.
 3. He taps a date → the **day list** (`src/app/day/[date].tsx`) opens: that day's tasks plus the next 7 days.
 4. He checks a task off → it's saved to completions (`src/storage/store.ts`) and drops off the pending list. A multi-day task advances to its next day.
-5. He can add a batch or a custom task → saved as new rules/entries.
-6. He reopens the app → AsyncStorage loads → same calendar, same progress.
+5. He can consult **Flock AI** (`src/components/FlockAiModal.tsx`) from the home briefing or any day view for veterinary symptoms or bird-count dosage calculations. Tapping "Add to Calendar" automatically parses and injects recovery tasks into his schedule.
+6. He can add notes to any day, share routines with farmhands via WhatsApp/SMS, or add custom tasks/batches.
+7. He reopens the app → AsyncStorage loads → same calendar, same progress.
 
 ## Stack
 
-- **Expo SDK ~58** — the runtime and build toolchain for a React Native app that runs on phone and can be recorded from an emulator for the demo video. https://docs.expo.dev/
+- **Expo SDK ~58** — the runtime and build toolchain for a React Native app that runs on physical devices and emulators. https://docs.expo.dev/
 - **Expo Router ~58** — file-based routing under `src/app/`; screens are route modules. https://docs.expo.dev/router/introduction/
-- **React Native 0.88** — the UI framework; no DOM, mobile components like View, Text, FlatList, Pressable. https://reactnative.dev/
+- **React Native 0.88** — the UI framework; mobile components like View, Text, ScrollView, Pressable. https://reactnative.dev/
 - **React 19** — component model with hooks. https://react.dev/
-- **nativewind 4.2.7** — Tailwind utility classes in React Native (eco palette: greens, lemon, yellow). https://www.nativewind.dev/
+- **Google Gemini API (`gemini-3.5-flash-lite`)** — lightweight, ultra-fast veterinary guidance and schedule recovery recommendations via direct client fetch.
+- **nativewind 4.2.7** — Tailwind utility classes in React Native with dark & light theme support. https://www.nativewind.dev/
 - **Tailwind CSS ^3.4** — utility classes consumed by nativewind. https://tailwindcss.com/
-- **AsyncStorage** (via `@react-native-async-storage/async-storage`) — key-value file on the phone where batches, rules, and completions persist. Needed to be added as a dependency.
-
-Doc links noted above. No external API, no AI model, no backend — zero external services.
+- **AsyncStorage** (via `@react-native-async-storage/async-storage`) — key-value persistence for batches, rules, completions, notes, and custom API keys.
+- **Phosphor React Native Icons** — high-contrast duotone icons for task categories and actions.
 
 ## Where It Runs and How Someone Tries It
 

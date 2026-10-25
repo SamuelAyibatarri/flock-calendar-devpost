@@ -31,17 +31,15 @@ Sam knows a real farmer with a real, recurring problem in an underserved niche �
 Monday opens the app and sees, per batch, what's due this week — e.g. "Batch A: deworming due · Batch B: cage cleaning due · water change daily" — and checks each off as he does it. The "oh, that's cool" beat: he doesn't have to remember anything; the app tells him what the flock needs.
 
 ## The POC Boundary
-In: layers only; multiple batches at different ages; a recurring care schedule (vaccines, deworming, cage cleaning, water changes) generated per batch; a "due this week" view; check-off; a simple history.
+In: layers only; multiple batches at different ages; a recurring care schedule (vaccines, deworming, cage cleaning, water changes) generated per batch; a "due this week" view; check-off; a simple history; daily farm notes; sharing routines via WhatsApp/SMS; Flock AI veterinary advisor with dosage calculations and one-tap schedule recovery injection.
 
 ## Later
 - Other poultry (broilers) and other livestock
-- Notifications / reminders
-- Treatment records and notes per batch
-- Reports and trends
-- Mobile app
+- Scheduled morning background push notifications
+- Financial profit & mortality tracking
 
 ## Explicitly Cut
 - **Money / profit tracking** — real and important, but it's a second kernel; deferred so the care kernel stays sharp.
 - **Other animal types** — kept out so the demo stays sharp and buildable; the schedule should be data so this is cheap later.
-- **Notifications** — later; the PoC proves the schedule, not delivery.
+- **Cloud accounts / server backends** — offline-first with local storage and direct client Gemini integration preserves speed and privacy.
 - **Deployment** — optional; a demo video and public repo are what's required.
