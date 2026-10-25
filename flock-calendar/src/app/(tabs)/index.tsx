@@ -21,7 +21,7 @@ import {
   type Rule,
 } from '@/storage/store';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { PlusIcon, SparkleIcon, TrashIcon } from 'phosphor-react-native';
+import { CalendarBlankIcon, PlusIcon, SparkleIcon, TrashIcon } from 'phosphor-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -277,13 +277,15 @@ export default function CalendarScreen() {
           </View>
 
           <View className="mx-4 mt-6">
-            <View className="flex-row items-end justify-between mb-2">
+            <View className="flex-row items-center justify-between mb-2">
               <Text className="text-foreground font-bold text-base">Today</Text>
-              <TouchableOpacity onPress={() => router.push(`/day/${today}`)}>
-                <Text
-                  className="text-xs font-semibold text-secondary"
-                  style={{ textDecorationLine: 'underline' }}
-                >
+              <TouchableOpacity
+                className="rounded-full bg-secondary px-2.5 py-1 flex-row items-center gap-1"
+                activeOpacity={0.8}
+                onPress={() => router.push(`/day/${today}`)}
+              >
+                <CalendarBlankIcon size={12} color="#1a1a1a" weight="bold" />
+                <Text className="text-secondary-foreground text-xs font-bold">
                   Open day
                 </Text>
               </TouchableOpacity>

@@ -73,6 +73,7 @@ export default function FlockAiModal({
   }, []);
 
   const [query, setQuery] = useState('');
+  const [activeQuestion, setActiveQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AiConsultationResult | null>(null);
   const [added, setAdded] = useState(false);
@@ -80,6 +81,9 @@ export default function FlockAiModal({
   const handleAsk = async (textToAsk?: string) => {
     const q = (textToAsk ?? query).trim();
     if (!q) return;
+    setActiveQuestion(q);
+    setQuery('');
+    Keyboard.dismiss();
     setLoading(true);
     setResult(null);
     setAdded(false);
@@ -118,6 +122,7 @@ export default function FlockAiModal({
 
   const resetAndClose = () => {
     setQuery('');
+    setActiveQuestion('');
     setResult(null);
     setAdded(false);
     onClose();
@@ -142,7 +147,7 @@ export default function FlockAiModal({
             maxHeight: keyboardHeight > 0 ? '58%' : '85%',
             marginBottom:
               Platform.OS === 'android'
-                ? (keyboardHeight > 0 ? keyboardHeight : Math.max(insets.bottom, 16) + 12)
+                ? (keyboardHeight > 0 ? keyboardHeight + 24 : Math.max(insets.bottom, 16))
                 : Math.max(insets.bottom, 16) + 12,
           }}
           className="p-5 pb-6 border-t border-border"
@@ -192,10 +197,7 @@ export default function FlockAiModal({
                   {SUGGESTED_CHIPS.map((chip, i) => (
                     <TouchableOpacity
                       key={i}
-                      onPress={() => {
-                        setQuery(chip);
-                        handleAsk(chip);
-                      }}
+                      onPress={() => handleAsk(chip)}
                       className="rounded-xl border border-border bg-card px-3 py-2 flex-row items-center gap-1.5"
                     >
                       <PillIcon size={14} color="#f59e0b" weight="duotone" />
@@ -224,6 +226,18 @@ export default function FlockAiModal({
             {/* Result View */}
             {result && !loading && (
               <View className="space-y-4">
+                {/* Active Consultation Question */}
+                {activeQuestion ? (
+                  <View className="rounded-xl border border-border bg-muted/50 px-3.5 py-2.5 mb-2">
+                    <Text className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider mb-0.5">
+                      Consultation Question
+                    </Text>
+                    <Text className="text-foreground text-xs font-medium">
+                      "{activeQuestion}"
+                    </Text>
+                  </View>
+                ) : null}
+
                 {/* Analysis Box */}
                 <View className="rounded-2xl border border-border bg-card p-4">
                   <Text className="text-foreground text-xs font-bold uppercase tracking-wider mb-2 text-primary">
